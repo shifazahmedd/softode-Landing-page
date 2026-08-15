@@ -141,7 +141,7 @@
 
                 products.forEach(p => {
                     grid.innerHTML += `
-                        <div class="bg-white rounded-[2rem] border border-slate-100 shadow-soft flex flex-col overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                        <div onclick="window.location.href='product.html?id=${p.id}'" class="cursor-pointer bg-white rounded-[2rem] border border-slate-100 shadow-soft flex flex-col overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
                             <div class="h-56 bg-slate-100 overflow-hidden relative">
                                 <img src="${p.image || 'https://placehold.co/600x400'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                             </div>
@@ -153,10 +153,9 @@
                                 <p class="text-slate-500 text-sm mb-6 line-clamp-2">${p.description || ''}</p>
                                 <div class="mb-6"><span class="text-3xl font-extrabold text-slate-900">$${p.price}</span></div>
                                 <div class="mt-auto">
-                                    <!-- THIS BUTTON ROUTES TO THE NEW PRODUCT PAGE -->
-                                    <a href="product.html?id=${p.id}" class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-primary-600 transition-all shadow-md flex items-center justify-center gap-2">
+                                    <div class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold group-hover:bg-primary-600 transition-all shadow-md flex items-center justify-center gap-2">
                                         View Details <i class="ph-bold ph-arrow-right"></i>
-                                    </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>`;
