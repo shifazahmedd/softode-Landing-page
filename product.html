@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details | Softode</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -53,7 +55,7 @@
             <div class="w-full space-y-4 sticky top-6">
                 <!-- Main Big Image/Video Container -->
                 <div id="main-image-container" class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm transition-opacity duration-300 relative">
-                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover">
+                    <img id="main-image" src="" class="w-full h-full object-cover">
                 </div>
                 <!-- Thumbnails row -->
                 <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
@@ -82,12 +84,11 @@
                     </div>
                     <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6"><i class="ph-fill ph-check-circle"></i> Managed Hosting Included</p>
                     
-                    <!-- THIS BUTTON ROUTES TO CHECKOUT -->
                     <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2">
                         Proceed to Checkout <i class="ph-bold ph-lock-key"></i>
                     </button>
                     
-                    <!-- Live Demo Link (Corrected ID and HTML) -->
+                    <!-- Direct Live Demo Button -->
                     <div id="demo-container" class="mt-4 hidden">
                         <a id="demo-btn" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
                             View Live Demo <i class="ph-bold ph-monitor-play"></i>
@@ -119,9 +120,9 @@
         const productId = urlParams.get('id');
         let currentImageArray = [];
 
-        // Safely extract YouTube ID without crashing
+        // Safe YouTube ID extractor - Guaranteed not to crash
         function getYoutubeId(url) {
-            if (!url) return null;
+            if (!url || typeof url !== 'string') return null;
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
             const match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
@@ -134,49 +135,56 @@
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
                 const data = await res.json();
                 
-                if(!data || data.length === 0) { throw new Error("Product not found"); }
+                // BULLETPROOF CHECK: Stops JS from crashing if Supabase returned an error instead of product array
+                if (!res.ok || !Array.isArray(data) || data.length === 0) {
+                    document.getElementById('loading-state').innerHTML = `
+                        <div class="text-center text-red-500 flex flex-col items-center">
+                            <i class="ph-fill ph-warning-circle text-5xl mb-4"></i>
+                            <p class="font-bold text-2xl mb-2">Product Not Found</p>
+                            <p class="text-slate-500">This product was deleted or the database is misconfigured.</p>
+                            <a href="index.html" class="px-6 py-3 bg-slate-900 text-white rounded-xl mt-6 inline-block hover:bg-black font-bold">Return Home</a>
+                        </div>`;
+                    return; // Halts execution to prevent crash
+                }
+                
                 const p = data[0];
                 
                 // 1. Populate Text Data
-                document.title = `${p.name} | Softode`;
+                document.title = `${p.name || 'Product'} | Softode`;
                 document.getElementById('prod-category').innerText = p.category || 'Template';
-                document.getElementById('prod-title').innerText = p.name;
+                document.getElementById('prod-title').innerText = p.name || 'Unnamed Product';
                 document.getElementById('prod-short-desc').innerText = p.description || '';
-                document.getElementById('prod-price').innerText = `$${p.price}`;
+                document.getElementById('prod-price').innerText = `$${p.price || '0'}`;
                 document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
                 
-                // Demo Button Logic - SAFELY handled now
+                // 2. Demo Link Setup
                 if(p.supplier && p.supplier.trim() !== '') { 
                     const demoContainer = document.getElementById('demo-container');
                     const demoBtn = document.getElementById('demo-btn');
-                    
                     if(demoContainer && demoBtn) {
                         demoContainer.classList.remove('hidden');
                         const urls = p.supplier.split(',');
-                        // Use the first link provided for the demo
                         demoBtn.href = urls[0] ? urls[0].trim() : '#';
                     }
                 }
 
-                // Checkout Button Setup
-                document.getElementById('checkout-btn').onclick = () => {
-                    window.location.href = `checkout.html?id=${p.id}`;
-                };
+                document.getElementById('checkout-btn').onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
 
-                // 2. Setup Image & Video Gallery
+                // 3. Setup Image & Video Gallery Safely
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
                 
-                // Parse the image_gallery safely
+                // Safely handle gallery array or string
                 if(p.image_gallery) {
-                    let extraMedia = [];
-                    if (typeof p.image_gallery === 'string') {
-                        extraMedia = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
-                    } else if (Array.isArray(p.image_gallery)) {
-                        extraMedia = p.image_gallery;
-                    }
-                    if (extraMedia.length > 0) {
-                        currentImageArray = currentImageArray.concat(extraMedia);
+                    if (Array.isArray(p.image_gallery)) {
+                        currentImageArray = currentImageArray.concat(p.image_gallery);
+                    } else if (typeof p.image_gallery === 'string') {
+                        try {
+                            const parsed = JSON.parse(p.image_gallery);
+                            if(Array.isArray(parsed)) currentImageArray = currentImageArray.concat(parsed);
+                        } catch(e) {
+                            currentImageArray = currentImageArray.concat(p.image_gallery.split(',').map(s=>s.trim()).filter(Boolean));
+                        }
                     }
                 }
 
@@ -187,9 +195,7 @@
                 if(currentImageArray.length > 1) {
                     currentImageArray.forEach((url, index) => {
                         const ytId = getYoutubeId(url);
-                        // If YT link, get official thumbnail
                         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
-                        // Overlay play button if video
                         const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-3xl"></i></div>` : '';
                         
                         const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
@@ -202,16 +208,15 @@
                     });
                 }
 
-                // Render main image
                 changeMainImage(0);
 
-                // Reveal Page safely
+                // Reveal Page Safely
                 document.getElementById('loading-state').classList.add('hidden');
                 document.getElementById('product-layout').classList.remove('hidden');
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500"><p class="font-bold text-xl mb-2">Oops!</p><p>Product not found or error loading.</p><a href="index.html" class="text-blue-500 underline mt-4 inline-block">Return Home</a></div>`;
+                document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500"><p class="font-bold text-xl mb-2">Network Error</p><a href="index.html" class="text-blue-500 underline mt-4 inline-block">Return Home</a></div>`;
             }
         }
 
@@ -224,16 +229,13 @@
             mainContainer.style.opacity = 0;
             setTimeout(() => {
                 if(ytId) {
-                    // Inject a playable YouTube iframe
                     mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
                 } else {
-                    // Inject standard image
                     mainContainer.innerHTML = `<img src="${url}" class="w-full h-full object-cover absolute inset-0">`;
                 }
                 mainContainer.style.opacity = 1;
             }, 150);
 
-            // Update thumbnail visual borders
             currentImageArray.forEach((_, i) => {
                 const thumbEl = document.getElementById(`thumb-${i}`);
                 if(thumbEl) {
