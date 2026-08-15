@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Softode | Digital Assets & Managed Hosting</title>
-    
+    <title>Softode | Own Your Digital Real Estate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], },
-                    colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' }, accent: { 500: '#8b5cf6' } },
-                    boxShadow: { 'soft': '0 20px 40px -15px rgba(0,0,0,0.05)' }
+                    colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }, accent: { 500: '#8b5cf6' } },
+                    boxShadow: { 'soft': '0 20px 40px -15px rgba(0,0,0,0.05)', 'glow': '0 0 40px -10px rgba(59, 130, 246, 0.5)' }
                 }
             }
         }
@@ -24,10 +22,6 @@
         .text-gradient { background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .bg-gradient-tech { background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%); }
         .blob { position: absolute; filter: blur(80px); z-index: -1; opacity: 0.4; }
-        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
-        .modal-exit { animation: modalFadeOut 0.2s ease-in forwards; }
-        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes modalFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen relative overflow-x-hidden">
@@ -36,16 +30,16 @@
     <div class="blob bg-accent-300 w-96 h-96 rounded-full top-40 right-0 translate-x-1/3"></div>
 
     <!-- Navigation -->
-    <nav class="fixed w-full z-40 bg-white/70 backdrop-blur-md border-b border-slate-200/50">
+    <nav class="fixed w-full z-50 bg-white/70 backdrop-blur-md border-b border-slate-200/50">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="#" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
+            <a href="index.html" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
                 <div class="w-8 h-8 rounded-lg bg-gradient-tech flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>
-                <span class="text-primary-600">Softode</span>
+                Soft<span class="text-primary-600">ode</span>
             </a>
             <div class="hidden md:flex space-x-8 font-medium text-sm text-slate-600">
                 <a href="#hero" class="hover:text-primary-600">Home</a>
-                <a href="#products" class="hover:text-primary-600">Templates</a>
-                <a href="#custom" class="hover:text-primary-600">Custom Apps</a>
+                <a href="#products" class="hover:text-primary-600">Digital Assets</a>
+                <a href="#benefits" class="hover:text-primary-600">Why Us</a>
             </div>
             <a href="#products" class="hidden md:inline-flex items-center justify-center bg-slate-900 text-white px-6 py-2.5 rounded-xl font-medium text-sm hover:bg-primary-600 transition-all">
                 Shop Now
@@ -54,325 +48,121 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="hero" class="pt-32 pb-20 md:pt-40 md:pb-32 px-6 relative overflow-hidden">
+    <section id="hero" class="pt-32 pb-20 md:pt-40 md:pb-32 px-6 relative">
         <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-8 items-center z-10 relative">
-            <!-- Text Content -->
             <div class="text-center lg:text-left z-10">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 border border-primary-100 text-primary-700 text-sm font-semibold mb-6">
                     <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span></span>
                     Managed Hosting Included
                 </div>
                 <h1 class="font-heading text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight mb-6 text-slate-900">
-                    Buy The Website. <br class="hidden lg:block">
-                    <span class="text-gradient">We Handle The Tech.</span>
+                    Launch Your Digital <br class="hidden lg:block">
+                    <span class="text-gradient">Empire Instantly.</span>
                 </h1>
                 <p class="text-lg md:text-xl text-slate-600 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                     Premium, production-ready website templates, admin panels, and custom software. Choose lifetime ownership or a flexible monthly subscription. We deploy and host it for you with zero coding required.
                 </p>
                 <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-                    <a href="#products" class="w-full sm:w-auto px-8 py-4 bg-gradient-tech text-white rounded-xl font-semibold hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 text-lg shadow-lg shadow-primary-500/30">
-                        Browse Templates <i class="ph-bold ph-arrow-right"></i>
+                    <a href="#products" class="w-full sm:w-auto px-8 py-4 bg-gradient-tech text-white rounded-xl font-semibold hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-lg shadow-lg">
+                        Browse Assets <i class="ph-bold ph-arrow-right"></i>
                     </a>
                 </div>
             </div>
 
             <!-- Hero Animated Graphic -->
             <div class="relative w-full max-w-2xl mx-auto lg:ml-auto z-10 perspective-[1000px]">
-                <!-- Abstract Dashboard UI Mockup -->
                 <div class="bg-white rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden transform md:-rotate-2 hover:rotate-0 transition-transform duration-500">
                     <div class="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
-                        <div class="w-3 h-3 rounded-full bg-amber-400"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-amber-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div>
                         <div class="ml-4 bg-white px-3 py-1 rounded-md text-xs text-slate-400 border border-slate-100 flex-1 flex items-center gap-2">
-                            <i class="ph-fill ph-lock-key"></i> mybusiness.softode.com
+                            <i class="ph-fill ph-lock-key"></i> admin.softode.com
                         </div>
                     </div>
                     <div class="p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="h-6 w-32 bg-slate-200 rounded-md"></div>
-                            <div class="h-8 w-8 bg-primary-100 rounded-full"></div>
-                        </div>
+                        <div class="flex items-center justify-between mb-6"><div class="h-6 w-32 bg-slate-200 rounded-md"></div><div class="h-8 w-8 bg-primary-100 rounded-full"></div></div>
                         <div class="grid grid-cols-3 gap-4 mb-6">
-                            <div class="h-24 bg-primary-50 rounded-xl border border-primary-100 p-4 flex flex-col justify-between">
-                                <div class="h-4 w-12 bg-primary-200 rounded"></div>
-                                <div class="h-6 w-20 bg-primary-500 rounded"></div>
-                            </div>
-                            <div class="h-24 bg-accent-50 rounded-xl border border-accent-100 p-4 flex flex-col justify-between">
-                                <div class="h-4 w-12 bg-accent-200 rounded"></div>
-                                <div class="h-6 w-20 bg-accent-500 rounded"></div>
-                            </div>
-                            <div class="h-24 bg-green-50 rounded-xl border border-green-100 p-4 flex flex-col justify-between">
-                                <div class="h-4 w-12 bg-green-200 rounded"></div>
-                                <div class="h-6 w-20 bg-green-500 rounded"></div>
-                            </div>
+                            <div class="h-24 bg-primary-50 rounded-xl border border-primary-100 p-4 flex flex-col justify-between"><div class="h-4 w-12 bg-primary-200 rounded"></div><div class="h-6 w-20 bg-primary-500 rounded"></div></div>
+                            <div class="h-24 bg-accent-50 rounded-xl border border-accent-100 p-4 flex flex-col justify-between"><div class="h-4 w-12 bg-accent-200 rounded"></div><div class="h-6 w-20 bg-accent-500 rounded"></div></div>
+                            <div class="h-24 bg-green-50 rounded-xl border border-green-100 p-4 flex flex-col justify-between"><div class="h-4 w-12 bg-green-200 rounded"></div><div class="h-6 w-20 bg-green-500 rounded"></div></div>
                         </div>
                         <div class="h-40 w-full bg-slate-50 rounded-xl border border-slate-100"></div>
                     </div>
                 </div>
-                
-                <!-- Floating Element -->
                 <div class="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-4 animate-bounce" style="animation-duration: 4s;">
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-2xl">
-                        <i class="ph-fill ph-check-circle"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium">Ready to deploy</p>
-                        <p class="font-heading font-bold text-slate-900 text-lg">Fully Managed</p>
-                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-2xl"><i class="ph-fill ph-check-circle"></i></div>
+                    <div><p class="text-xs text-slate-500 font-medium">Ready to deploy</p><p class="font-heading font-bold text-slate-900 text-lg">Fully Managed</p></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Templates (Products) -->
+    <!-- Products Grid -->
     <section id="products" class="py-24 bg-white relative z-10">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16">
                 <h2 class="font-heading text-4xl md:text-5xl font-bold mb-4 text-slate-900">Permanent Websites</h2>
                 <p class="text-slate-500 max-w-2xl mx-auto text-lg">One-time payment. Hosted and managed by our team.</p>
             </div>
-            
             <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="col-span-full text-center text-slate-400 py-10"><i class="ph ph-spinner animate-spin text-3xl"></i><br>Loading Catalog...</div>
             </div>
         </div>
     </section>
 
-    <!-- Custom Apps -->
-    <section id="custom" class="py-24 bg-slate-50 relative">
-        <div class="max-w-3xl mx-auto px-6 relative z-10">
-            <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-soft border border-slate-100">
-                <div class="text-center mb-10">
-                    <h2 class="font-heading text-3xl md:text-4xl font-bold mb-4 text-slate-900">Custom Apps & Software</h2>
-                    <p class="text-slate-500">Need a bespoke solution? Request a custom web application tailored for your business.</p>
-                </div>
-                
-                <form class="space-y-6" onsubmit="event.preventDefault(); alert('Request sent! Our team will contact you.');">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-slate-700">Full Name</label>
-                            <input type="text" required class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-primary-500">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-slate-700">Email Address</label>
-                            <input type="email" required class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-primary-500">
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-semibold text-slate-700">Project Details</label>
-                        <textarea rows="4" required class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-primary-500 resize-none"></textarea>
-                    </div>
-                    <button type="submit" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-primary-600 transition-all shadow-md">Submit Request</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 pt-16 pb-8">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                <a href="#" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
-                    <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>
-                    Soft<span class="text-primary-600">ode</span>
-                </a>
-                <p class="text-sm text-slate-400 font-medium">© 2026 Softode. All rights reserved.</p>
-            </div>
+        <div class="max-w-7xl mx-auto px-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+            <a href="#" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
+                <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>Soft<span class="text-primary-600">ode</span>
+            </a>
+            <p class="text-sm text-slate-400 font-medium">© 2026 Softode. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- CHECKOUT MODAL WITH ONBOARDING -->
-    <div id="checkout-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl relative z-10 mx-4 flex flex-col max-h-[95vh]">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-[2rem]">
-                <h3 class="font-heading font-bold text-xl text-slate-900">Secure Checkout & Setup</h3>
-                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-500 shadow-sm hover:bg-slate-200"><i class="ph-bold ph-x"></i></button>
-            </div>
-            
-            <div class="p-6 md:p-8 overflow-y-auto hide-scrollbar">
-                <div class="flex items-center gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <div class="w-16 h-16 rounded-lg bg-slate-200 overflow-hidden shrink-0"><img id="modal-product-img" src="" class="w-full h-full object-cover"></div>
-                    <div><h4 id="modal-product-title" class="font-bold text-slate-900">Product</h4><p id="modal-product-price" class="text-primary-700 font-bold text-lg">$0.00</p></div>
-                </div>
-
-                <form id="checkout-form" onsubmit="submitOrder(event)" class="space-y-4">
-                    <input type="hidden" id="checkout-product-id">
-
-                    <!-- Standard Info -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1"><label class="text-xs font-semibold text-slate-600">Full Name</label><input type="text" id="checkout-name" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border outline-none focus:border-primary-500"></div>
-                        <div class="space-y-1"><label class="text-xs font-semibold text-slate-600">Email Address</label><input type="email" id="checkout-email" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border outline-none focus:border-primary-500"></div>
-                    </div>
-
-                    <!-- MANAGED HOSTING ONBOARDING -->
-                    <div class="bg-primary-50 p-5 rounded-xl border border-primary-100 mt-6 space-y-4">
-                        <h4 class="text-sm font-bold text-primary-900 flex items-center gap-2 border-b border-primary-100 pb-2">
-                            <i class="ph-fill ph-rocket-launch text-lg"></i> Managed Hosting Details
-                        </h4>
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-primary-800">Your Business Name</label>
-                            <input type="text" id="checkout-biz-name" required placeholder="e.g., Leaf & Latte" class="w-full px-4 py-2.5 rounded-lg bg-white border border-primary-100 outline-none focus:border-primary-500 text-sm">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-primary-800">Domain Choice</label>
-                            <select id="checkout-domain-type" onchange="toggleDomain()" class="w-full px-4 py-2.5 rounded-lg bg-white border border-primary-100 outline-none text-sm font-medium text-slate-700">
-                                <option value="free">Free Subdomain (yourname.softode.com)</option>
-                                <option value="custom">Connect Custom Domain (+$1 fee later)</option>
-                            </select>
-                        </div>
-                        <div id="domain-name-wrapper" class="hidden space-y-1">
-                            <label class="text-xs font-semibold text-primary-800">Custom Domain Name</label>
-                            <input type="text" id="checkout-domain-name" placeholder="e.g., mycoffeeshop.com" class="w-full px-4 py-2.5 rounded-lg bg-white border border-primary-100 outline-none text-sm">
-                        </div>
-                    </div>
-                    
-                    <!-- Dummy Card Input -->
-                    <div class="space-y-1 pt-4">
-                        <label class="text-xs font-semibold text-slate-600 flex items-center gap-1">
-                            <i class="ph-fill ph-lock-key text-green-500"></i> Secure Payment
-                        </label>
-                        <div class="relative">
-                            <input type="text" placeholder="1234 5678 9101 1121" class="w-full px-4 py-3 pl-10 rounded-xl bg-slate-50 border border-slate-200 outline-none font-mono text-sm">
-                            <i class="ph-fill ph-credit-card absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="checkout-submit-btn" class="w-full py-4 mt-6 bg-slate-900 text-white rounded-xl font-bold hover:bg-primary-600 transition-all shadow-lg flex items-center justify-center gap-2">
-                        <span>Pay & Complete Order</span>
-                    </button>
-                    
-                    <div id="checkout-success" class="hidden mt-4 bg-green-50 text-green-700 p-4 rounded-xl text-center text-sm font-semibold border border-green-200">
-                        <i class="ph-fill ph-check-circle text-lg mb-1 block"></i>
-                        Order Successful! Our team is deploying your website. Check your email shortly.
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- SUPABASE INTEGRATION SCRIPT -->
+    <!-- SUPABASE JAVASCRIPT -->
     <script>
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
-        const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+        const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
-        // Toggle Domain Input UI
-        function toggleDomain() {
-            const type = document.getElementById('checkout-domain-type').value;
-            document.getElementById('domain-name-wrapper').classList.toggle('hidden', type === 'free');
-        }
-
-        // LOAD CATALOG (Includes Fallback for Leaf & Latte)
         async function loadCatalog() {
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*`, { headers });
-                let products = await res.json();
+                // Fetch products ordered by sort_order
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*&order=sort_order.asc`, { headers });
+                const products = await res.json();
                 
                 const grid = document.getElementById('product-grid');
                 grid.innerHTML = ''; 
 
-                // Failsafe: If DB is empty, show the Leaf & Latte template automatically
                 if(!products || products.length === 0) {
-                    products = [{
-                        id: 1, name: "Leaf & Latte Coffee Shop", price: 49.00,
-                        description: "A premium, modern artisanal coffee shop template. Perfect for cafes and roasters.",
-                        image: "https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                        supplier: "https://masteradminpanelforclients.netlify.app/" // Using supplier field for Demo URL
-                    }];
+                    grid.innerHTML = '<p class="col-span-full text-center text-slate-500 py-10">Storefront is empty. Add products in Admin Panel.</p>';
+                    return;
                 }
 
                 products.forEach(p => {
-                    // Check if there is a demo URL (stored in the supplier field)
-                    const demoLink = p.supplier ? `<a href="${p.supplier}" target="_blank" class="w-full py-3 text-center bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm block">View Live Demo</a>` : '';
-
                     grid.innerHTML += `
-                        <div class="bg-white rounded-[2rem] border border-slate-100 shadow-soft flex flex-col overflow-hidden hover:shadow-xl transition-shadow">
-                            <div class="h-56 bg-slate-100 overflow-hidden"><img src="${p.image || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}" class="w-full h-full object-cover"></div>
+                        <div class="bg-white rounded-[2rem] border border-slate-100 shadow-soft flex flex-col overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                            <div class="h-56 bg-slate-100 overflow-hidden relative">
+                                <img src="${p.image || 'https://placehold.co/600x400'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            </div>
                             <div class="p-8 flex flex-col flex-grow">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-primary-600 bg-primary-50 px-2 py-1 rounded-md inline-block self-start mb-3">
+                                    ${p.category || 'Template'}
+                                </span>
                                 <h3 class="font-heading text-xl font-bold mb-2 text-slate-900">${p.name}</h3>
-                                <p class="text-slate-500 text-sm mb-6 line-clamp-2">${p.description || 'Premium Managed Website Template.'}</p>
-                                <div class="mb-6"><span class="text-3xl font-extrabold text-slate-900">$${p.price}</span> <span class="text-sm text-slate-500">/ one-time</span></div>
-                                <div class="mt-auto space-y-3">
-                                    <button onclick="openCheckout(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${p.image}')" class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-primary-600 transition-all shadow-md">Buy & Deploy</button>
-                                    ${demoLink}
+                                <p class="text-slate-500 text-sm mb-6 line-clamp-2">${p.description || ''}</p>
+                                <div class="mb-6"><span class="text-3xl font-extrabold text-slate-900">$${p.price}</span></div>
+                                <div class="mt-auto">
+                                    <!-- THIS BUTTON ROUTES TO THE NEW PRODUCT PAGE -->
+                                    <a href="product.html?id=${p.id}" class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-primary-600 transition-all shadow-md flex items-center justify-center gap-2">
+                                        View Details <i class="ph-bold ph-arrow-right"></i>
+                                    </a>
                                 </div>
                             </div>
                         </div>`;
                 });
             } catch (err) { 
-                document.getElementById('product-grid').innerHTML = '<p class="col-span-full text-center text-red-500 py-10">Error loading catalog from database.</p>';
-            }
-        }
-
-        // MODAL CONTROLS
-        function openCheckout(id, title, price, image) {
-            document.getElementById('checkout-product-id').value = id;
-            document.getElementById('modal-product-title').innerText = title;
-            document.getElementById('modal-product-price').innerText = "$" + price;
-            document.getElementById('modal-product-img').src = image || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80';
-            
-            const modal = document.getElementById('checkout-modal');
-            modal.classList.remove('hidden');
-            modal.children[1].classList.remove('modal-exit');
-            modal.children[1].classList.add('modal-enter');
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('checkout-modal');
-            modal.children[1].classList.remove('modal-enter');
-            modal.children[1].classList.add('modal-exit');
-            setTimeout(() => { 
-                modal.classList.add('hidden'); 
-                document.getElementById('checkout-form').reset(); 
-                toggleDomain(); // reset UI
-                document.getElementById('checkout-success').classList.add('hidden'); 
-                document.getElementById('checkout-submit-btn').classList.remove('hidden'); 
-            }, 200);
-        }
-
-        // POST ORDER TO SUPABASE WITH ONBOARDING DATA
-        async function submitOrder(e) {
-            e.preventDefault();
-            const btn = document.getElementById('checkout-submit-btn');
-            const msg = document.getElementById('checkout-success');
-            
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Processing...';
-            btn.disabled = true;
-
-            // Bundle customer info AND Onboarding info into the JSONB customer field
-            const customerData = {
-                name: document.getElementById('checkout-name').value,
-                email: document.getElementById('checkout-email').value,
-                businessName: document.getElementById('checkout-biz-name').value,
-                domainType: document.getElementById('checkout-domain-type').value,
-                domainName: document.getElementById('checkout-domain-name').value || 'N/A'
-            };
-
-            const newOrder = {
-                id: Date.now(),
-                date: new Date().toISOString().split('T')[0],
-                customer: customerData,
-                items: [{ catalogId: parseInt(document.getElementById('checkout-product-id').value), qty: 1 }],
-                total: parseFloat(document.getElementById('modal-product-price').innerText.replace('$','')),
-                status: 'Pending Setup'
-            };
-
-            try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
-                    method: 'POST', headers: headers, body: JSON.stringify(newOrder)
-                });
-
-                if(res.ok) {
-                    btn.classList.add('hidden');
-                    msg.classList.remove('hidden');
-                    setTimeout(closeModal, 3000);
-                } else { throw new Error("API Error"); }
-            } catch(err) {
-                alert("Order failed. Please check database connection.");
-                btn.innerHTML = 'Pay & Complete Order';
-                btn.disabled = false;
+                document.getElementById('product-grid').innerHTML = '<p class="col-span-full text-center text-red-500 py-10">Error connecting to database.</p>';
             }
         }
 
