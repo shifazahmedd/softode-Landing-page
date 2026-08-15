@@ -54,7 +54,8 @@
 
         async function loadCatalog() {
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*`, { headers });
+                // Fetch ordered by the new sort_order column to allow custom sorting
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*&order=sort_order.desc,id.desc`, { headers });
                 const products = await res.json();
                 
                 const grid = document.getElementById('product-grid');
@@ -66,6 +67,7 @@
                 }
 
                 products.forEach(p => {
+                    // Notice how the entire block is now an <a> tag linking to product.html
                     grid.innerHTML += `
                         <a href="product.html?id=${p.id}" class="block bg-white rounded-[2rem] border border-slate-100 shadow-sm flex flex-col overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer h-full relative z-10">
                             <div class="h-56 bg-slate-100 overflow-hidden relative">
@@ -86,6 +88,7 @@
                 document.getElementById('product-grid').innerHTML = '<p class="col-span-full text-center text-red-500 py-10">Error connecting to database.</p>';
             }
         }
+        
         loadCatalog();
     </script>
 </body>
