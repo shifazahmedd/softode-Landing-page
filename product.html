@@ -50,10 +50,9 @@
             
             <!-- LEFT: Image Slider -->
             <div class="w-full space-y-4 sticky top-6">
-                <!-- Main Big Media -->
-                <div class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative">
-                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover transition-opacity duration-300 absolute inset-0 z-10">
-                    <iframe id="main-video" src="" class="w-full h-full absolute inset-0 z-20 hidden" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <!-- Main Big Image -->
+                <div class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
+                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover transition-opacity duration-300">
                 </div>
                 <!-- Thumbnails row -->
                 <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
@@ -87,11 +86,11 @@
                         Proceed to Checkout <i class="ph-bold ph-lock-key"></i>
                     </button>
                     
-                    <!-- Live Demo Link -->
+                    <!-- Live Demo Link Modal Trigger -->
                     <div id="demo-container" class="mt-4 hidden">
-                        <a id="demo-link" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
-                            View Live Demo <i class="ph-bold ph-monitor-play"></i>
-                        </a>
+                        <button onclick="openDemoModal()" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                            View Live Demos <i class="ph-bold ph-monitor-play"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -116,14 +115,21 @@
         const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
         const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
-        // Get the Product ID from the URL (e.g., product.html?id=123)
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
 
         let currentImageArray = [];
 
+        // Safely extract YouTube ID without crashing
+        function getYoutubeId(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
         async function fetchProductDetails() {
-            if(!productId) { window.location.href = 'index.html'; return; } // Redirect if no ID
+            if(!productId) { window.location.href = 'index.html'; return; } 
 
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
@@ -132,107 +138,101 @@
                 if(!data || data.length === 0) { throw new Error("Product not found"); }
                 
                 const p = data[0];
-                renderProduct(p);
+                
+                // 1. Populate Text Data
+                document.title = `${p.name} | Softode`;
+                document.getElementById('prod-category').innerText = p.category || 'Template';
+                document.getElementById('prod-title').innerText = p.name;
+                document.getElementById('prod-short-desc').innerText = p.description || '';
+                document.getElementById('prod-price').innerText = `$${p.price}`;
+                document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
+                
+                // Demo Button Logic (Direct Link)
+                if(p.supplier) { 
+                    document.getElementById('demo-container').classList.remove('hidden');
+                    const urls = p.supplier.split(',');
+                    const frontendUrl = urls[0] ? urls[0].trim() : '#';
+                    // We only use the first URL now (Frontend Landing Page Demo)
+                    document.getElementById('demo-btn').href = frontendUrl;
+                }
+
+                // Checkout Button Setup
+                document.getElementById('checkout-btn').onclick = () => {
+                    window.location.href = `checkout.html?id=${p.id}`;
+                };
+
+                // 2. Setup Image & Video Gallery
+                const mainImg = p.image || 'https://placehold.co/800x600';
+                currentImageArray = [mainImg];
+                
+                // Robustly parse the image_gallery array/string from Supabase
+                if(p.image_gallery) {
+                    let extraMedia = [];
+                    if (typeof p.image_gallery === 'string') {
+                        // If saved as a comma-separated string
+                        extraMedia = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
+                    } else if (Array.isArray(p.image_gallery)) {
+                        // If saved as a JSON array
+                        extraMedia = p.image_gallery;
+                    }
+                    if (extraMedia.length > 0) {
+                        currentImageArray = currentImageArray.concat(extraMedia);
+                    }
+                }
+
+                // Build Thumbnails
+                const thumbContainer = document.getElementById('thumbnail-container');
+                thumbContainer.innerHTML = '';
+                
+                if(currentImageArray.length > 1) {
+                    currentImageArray.forEach((url, index) => {
+                        const ytId = getYoutubeId(url);
+                        
+                        // If it's a YouTube link, grab the official YouTube thumbnail and overlay a Play button
+                        const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
+                        const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl"><i class="ph-fill ph-play-circle text-white text-3xl drop-shadow-md"></i></div>` : '';
+                        
+                        const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
+                        thumbContainer.innerHTML += `
+                            <button onclick="changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                                <img src="${thumbUrl}" class="w-full h-full object-cover pointer-events-none">
+                                ${playIcon}
+                            </button>
+                        `;
+                    });
+                }
+
+                // Render main image
+                changeMainImage(0);
+
+                // Reveal Page
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('product-layout').classList.remove('hidden');
+
             } catch (err) {
+                console.error(err);
                 document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500"><p class="font-bold text-xl mb-2">Oops!</p><p>Product not found or database error.</p><a href="index.html" class="text-blue-500 underline mt-4 inline-block">Return Home</a></div>`;
             }
         }
 
-        function renderProduct(p) {
-            // 1. Populate Text Data
-            document.title = `${p.name} | Softode`;
-            document.getElementById('prod-category').innerText = p.category || 'Template';
-            document.getElementById('prod-title').innerText = p.name;
-            document.getElementById('prod-short-desc').innerText = p.description || '';
-            document.getElementById('prod-price').innerText = `$${p.price}`;
-            document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
-            
-            // Demo Button Logic (Simplified to Direct Link)
-            if(p.supplier) { 
-                document.getElementById('demo-container').classList.remove('hidden');
-                const urls = p.supplier.split(',');
-                const frontendUrl = urls[0] ? urls[0].trim() : '#';
-                document.getElementById('demo-link').href = frontendUrl;
-            }
-
-            // Checkout Button Setup
-                document.getElementById('demo-frontend-link').href = frontendUrl;
-                document.getElementById('demo-admin-link').href = adminUrl;
-            }
-
-            // Checkout Button Setup (Pass the ID to the checkout page)
-            document.getElementById('checkout-btn').onclick = () => {
-                window.location.href = `checkout.html?id=${p.id}`;
-            };
-
-            // 2. Setup Image Gallery
-            const mainImg = p.image || 'https://placehold.co/800x600';
-            currentImageArray = [mainImg];
-            
-            // If they uploaded gallery images in Admin panel, add them to the array
-            if(p.image_gallery && Array.isArray(p.image_gallery)) {
-                currentImageArray = currentImageArray.concat(p.image_gallery);
-            }
-
-            // Build Thumbnails
-            const thumbContainer = document.getElementById('thumbnail-container');
-            thumbContainer.innerHTML = '';
-            
-            if(currentImageArray.length > 1) {
-                currentImageArray.forEach((mediaUrl, index) => {
-                    const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
-                    const ytId = getYouTubeId(mediaUrl);
-                    const thumbSrc = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : mediaUrl;
-                    const playIcon = ytId ? `<div class="absolute inset-0 bg-black/30 flex items-center justify-center"><i class="ph-fill ph-play-circle text-white text-3xl"></i></div>` : '';
-                    
-                    thumbContainer.innerHTML += `
-                        <button onclick="changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
-                            <img src="${thumbSrc}" class="w-full h-full object-cover pointer-events-none">
-                            ${playIcon}
-                        </button>
-                    `;
-                });
-            }
-
-            // Set main image initially
-            changeMainImage(0);
-
-            // Reveal Page
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('product-layout').classList.remove('hidden');
-        }
-
-        // Helper to extract YouTube ID
-        function getYouTubeId(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
-        // Javascript to swap the large image or video when a small one is clicked
+        // Swap the large image or embed YouTube when a thumbnail is clicked
         function changeMainImage(index) {
-            const mainImgEl = document.getElementById('main-image');
-            const mainVidEl = document.getElementById('main-video');
-            const mediaUrl = currentImageArray[index];
-            const ytId = getYouTubeId(mediaUrl);
+            const mainContainer = document.getElementById('main-image-container');
+            const url = currentImageArray[index];
+            const ytId = getYoutubeId(url);
             
-            if(ytId) {
-                // Show Video, Hide Image
-                mainImgEl.classList.add('hidden');
-                mainVidEl.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
-                mainVidEl.classList.remove('hidden');
-            } else {
-                // Show Image, Hide Video
-                mainVidEl.classList.add('hidden');
-                mainVidEl.src = ""; // Stop video playback
-                
-                mainImgEl.style.opacity = 0;
-                mainImgEl.classList.remove('hidden');
-                setTimeout(() => {
-                    mainImgEl.src = mediaUrl;
-                    mainImgEl.style.opacity = 1;
-                }, 150);
-            }
+            // Simple fade effect
+            mainContainer.style.opacity = 0;
+            setTimeout(() => {
+                if(ytId) {
+                    // Inject a playable YouTube iframe
+                    mainContainer.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                } else {
+                    // Inject a standard image
+                    mainContainer.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
+                }
+                mainContainer.style.opacity = 1;
+            }, 150);
 
             // Update thumbnail borders
             currentImageArray.forEach((_, i) => {
