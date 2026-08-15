@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | Softode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], },
+                    colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .active-thumb { border: 2px solid #2563eb; opacity: 1; }
+        .inactive-thumb { border: 2px solid transparent; opacity: 0.6; }
+        .inactive-thumb:hover { opacity: 1; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen">
+
+    <!-- Simple Navigation -->
+    <nav class="bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="index.html" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
+                <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>
+                Soft<span class="text-primary-600">ode</span>
+            </a>
+            <a href="index.html" class="text-sm font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1">
+                <i class="ph-bold ph-arrow-left"></i> Back to Store
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content Loader -->
+    <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
+        <div class="text-center text-slate-400"><i class="ph ph-spinner animate-spin text-4xl mb-2"></i><p>Loading product...</p></div>
+    </div>
+
+    <!-- Product Layout (Hidden until loaded) -->
+    <main id="product-layout" class="hidden flex-grow max-w-7xl mx-auto px-6 py-12 w-full">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            
+            <!-- LEFT: Image Slider -->
+            <div class="w-full space-y-4 sticky top-6">
+                <!-- Main Big Image -->
+                <div class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
+                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover transition-opacity duration-300">
+                </div>
+                <!-- Thumbnails row -->
+                <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
+                    <!-- Javascript will inject thumbnails here -->
+                </div>
+            </div>
+
+            <!-- RIGHT: Product Details -->
+            <div class="flex flex-col">
+                <span id="prod-category" class="text-xs font-black uppercase tracking-wider text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg inline-block self-start mb-4">
+                    Category
+                </span>
+                
+                <h1 id="prod-title" class="font-heading text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">
+                    Product Title
+                </h1>
+                
+                <p id="prod-short-desc" class="text-lg text-slate-500 mb-8 leading-relaxed">
+                    Short description goes here.
+                </p>
+
+                <div class="p-6 bg-white rounded-3xl border border-slate-200 shadow-sm mb-10">
+                    <div class="flex items-end gap-2 mb-2">
+                        <span id="prod-price" class="text-5xl font-black text-slate-900">$0</span>
+                        <span class="text-slate-500 font-medium mb-1">/ one-time payment</span>
+                    </div>
+                    <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6"><i class="ph-fill ph-check-circle"></i> Managed Hosting Included</p>
+                    
+                    <!-- THIS BUTTON ROUTES TO CHECKOUT -->
+                    <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2">
+                        Proceed to Checkout <i class="ph-bold ph-lock-key"></i>
+                    </button>
+                    
+                    <!-- Live Demo Link (If available) -->
+                    <div id="demo-container" class="mt-4 hidden">
+                        <a id="prod-demo" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                            View Live Demo <i class="ph-bold ph-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Full Description / Features -->
+                <div>
+                    <h3 class="font-heading text-2xl font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2">Product Overview</h3>
+                    <div id="prod-full-desc" class="prose prose-slate max-w-none text-slate-600 leading-loose whitespace-pre-line">
+                        Detailed description will appear here.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-20 pt-8 pb-8">
+        <div class="max-w-7xl mx-auto px-6 text-center"><p class="text-sm text-slate-400 font-medium">© 2026 Softode. All rights reserved.</p></div>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
+        const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+
+        // Get the Product ID from the URL (e.g., product.html?id=123)
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+
+        let currentImageArray = [];
+
+        async function fetchProductDetails() {
+            if(!productId) { window.location.href = 'index.html'; return; } // Redirect if no ID
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
+                const data = await res.json();
+                
+                if(!data || data.length === 0) { throw new Error("Product not found"); }
+                
+                const p = data[0];
+                renderProduct(p);
+            } catch (err) {
+                document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500"><p class="font-bold text-xl mb-2">Oops!</p><p>Product not found or database error.</p><a href="index.html" class="text-blue-500 underline mt-4 inline-block">Return Home</a></div>`;
+            }
+        }
+
+        function renderProduct(p) {
+            // 1. Populate Text Data
+            document.title = `${p.name} | Softode`;
+            document.getElementById('prod-category').innerText = p.category || 'Template';
+            document.getElementById('prod-title').innerText = p.name;
+            document.getElementById('prod-short-desc').innerText = p.description || '';
+            document.getElementById('prod-price').innerText = `$${p.price}`;
+            document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
+            
+            // Demo Button Logic
+            if(p.supplier) { // We used the 'supplier' field for Demo URLs
+                document.getElementById('demo-container').classList.remove('hidden');
+                document.getElementById('prod-demo').href = p.supplier;
+            }
+
+            // Checkout Button Setup (Pass the ID to the checkout page)
+            document.getElementById('checkout-btn').onclick = () => {
+                window.location.href = `checkout.html?id=${p.id}`;
+            };
+
+            // 2. Setup Image Gallery
+            const mainImg = p.image || 'https://placehold.co/800x600';
+            currentImageArray = [mainImg];
+            
+            // If they uploaded gallery images in Admin panel, add them to the array
+            if(p.image_gallery && Array.isArray(p.image_gallery)) {
+                currentImageArray = currentImageArray.concat(p.image_gallery);
+            }
+
+            // Set main image
+            document.getElementById('main-image').src = currentImageArray[0];
+
+            // Build Thumbnails
+            const thumbContainer = document.getElementById('thumbnail-container');
+            thumbContainer.innerHTML = '';
+            
+            if(currentImageArray.length > 1) {
+                currentImageArray.forEach((imgUrl, index) => {
+                    const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
+                    thumbContainer.innerHTML += `
+                        <button onclick="changeMainImage(${index})" id="thumb-${index}" class="w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                            <img src="${imgUrl}" class="w-full h-full object-cover pointer-events-none">
+                        </button>
+                    `;
+                });
+            }
+
+            // Reveal Page
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('product-layout').classList.remove('hidden');
+        }
+
+        // Javascript to swap the large image when a small one is clicked
+        function changeMainImage(index) {
+            const mainImgEl = document.getElementById('main-image');
+            
+            // Simple fade effect
+            mainImgEl.style.opacity = 0;
+            setTimeout(() => {
+                mainImgEl.src = currentImageArray[index];
+                mainImgEl.style.opacity = 1;
+            }, 150);
+
+            // Update thumbnail borders
+            currentImageArray.forEach((_, i) => {
+                const thumbEl = document.getElementById(`thumb-${i}`);
+                if(thumbEl) {
+                    if(i === index) {
+                        thumbEl.classList.remove('inactive-thumb');
+                        thumbEl.classList.add('active-thumb');
+                    } else {
+                        thumbEl.classList.remove('active-thumb');
+                        thumbEl.classList.add('inactive-thumb');
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchProductDetails);
+    </script>
+</body>
+</html>
