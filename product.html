@@ -50,9 +50,10 @@
             
             <!-- LEFT: Image Slider -->
             <div class="w-full space-y-4 sticky top-6">
-                <!-- Main Big Image -->
-                <div class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
-                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover transition-opacity duration-300">
+                <!-- Main Big Media -->
+                <div class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative">
+                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover transition-opacity duration-300 absolute inset-0 z-10">
+                    <iframe id="main-video" src="" class="w-full h-full absolute inset-0 z-20 hidden" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
                 <!-- Thumbnails row -->
                 <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
@@ -86,11 +87,11 @@
                         Proceed to Checkout <i class="ph-bold ph-lock-key"></i>
                     </button>
                     
-                    <!-- Live Demo Link Modal Trigger -->
+                    <!-- Live Demo Link -->
                     <div id="demo-container" class="mt-4 hidden">
-                        <button onclick="openDemoModal()" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
-                            View Live Demos <i class="ph-bold ph-monitor-play"></i>
-                        </button>
+                        <a id="demo-link" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                            View Live Demo <i class="ph-bold ph-monitor-play"></i>
+                        </a>
                     </div>
                 </div>
 
@@ -109,46 +110,6 @@
     <footer class="bg-white border-t border-slate-200 mt-20 pt-8 pb-8">
         <div class="max-w-7xl mx-auto px-6 text-center"><p class="text-sm text-slate-400 font-medium">© 2026 Softode. All rights reserved.</p></div>
     </footer>
-
-    <!-- ==========================================
-         DEMO CHOICE MODAL
-         ========================================== -->
-    <div id="demo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDemoModal()"></div>
-        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl relative z-10 mx-4 overflow-hidden transform transition-all">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-heading font-bold text-xl text-slate-900">Choose Demo Experience</h3>
-                <button onclick="closeDemoModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-500 hover:bg-slate-200 transition-colors">
-                    <i class="ph-bold ph-x"></i>
-                </button>
-            </div>
-            <div class="p-6 md:p-8 space-y-4">
-                <a id="demo-frontend-link" href="#" target="_blank" class="block border border-slate-200 hover:border-primary-500 hover:shadow-md transition-all rounded-2xl p-6 group">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center shrink-0 group-hover:bg-primary-500 group-hover:text-white transition-colors">
-                            <i class="ph-fill ph-storefront text-2xl"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-slate-900 text-lg">Customer View</h4>
-                            <p class="text-sm text-slate-500">Explore the live website exactly as your customers will see it.</p>
-                        </div>
-                    </div>
-                </a>
-                
-                <a id="demo-admin-link" href="#" target="_blank" class="block border border-slate-200 hover:border-accent-500 hover:shadow-md transition-all rounded-2xl p-6 group">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-accent-50 text-accent-600 flex items-center justify-center shrink-0 group-hover:bg-accent-500 group-hover:text-white transition-colors">
-                            <i class="ph-fill ph-lock-key text-2xl"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-slate-900 text-lg">Admin Panel View</h4>
-                            <p class="text-sm text-slate-500">Look behind the scenes. See how easy it is to manage your store.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </div>
 
     <script>
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
@@ -186,15 +147,15 @@
             document.getElementById('prod-price').innerText = `$${p.price}`;
             document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
             
-            // Demo Button Logic (Splitting the URLs by comma)
+            // Demo Button Logic (Simplified to Direct Link)
             if(p.supplier) { 
                 document.getElementById('demo-container').classList.remove('hidden');
-                
                 const urls = p.supplier.split(',');
                 const frontendUrl = urls[0] ? urls[0].trim() : '#';
-                // If they didn't provide a second URL, use a default demo admin panel or hide it
-                const adminUrl = urls[1] ? urls[1].trim() : '#';
-                
+                document.getElementById('demo-link').href = frontendUrl;
+            }
+
+            // Checkout Button Setup
                 document.getElementById('demo-frontend-link').href = frontendUrl;
                 document.getElementById('demo-admin-link').href = adminUrl;
             }
@@ -213,39 +174,65 @@
                 currentImageArray = currentImageArray.concat(p.image_gallery);
             }
 
-            // Set main image
-            document.getElementById('main-image').src = currentImageArray[0];
-
             // Build Thumbnails
             const thumbContainer = document.getElementById('thumbnail-container');
             thumbContainer.innerHTML = '';
             
             if(currentImageArray.length > 1) {
-                currentImageArray.forEach((imgUrl, index) => {
+                currentImageArray.forEach((mediaUrl, index) => {
                     const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
+                    const ytId = getYouTubeId(mediaUrl);
+                    const thumbSrc = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : mediaUrl;
+                    const playIcon = ytId ? `<div class="absolute inset-0 bg-black/30 flex items-center justify-center"><i class="ph-fill ph-play-circle text-white text-3xl"></i></div>` : '';
+                    
                     thumbContainer.innerHTML += `
-                        <button onclick="changeMainImage(${index})" id="thumb-${index}" class="w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
-                            <img src="${imgUrl}" class="w-full h-full object-cover pointer-events-none">
+                        <button onclick="changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                            <img src="${thumbSrc}" class="w-full h-full object-cover pointer-events-none">
+                            ${playIcon}
                         </button>
                     `;
                 });
             }
+
+            // Set main image initially
+            changeMainImage(0);
 
             // Reveal Page
             document.getElementById('loading-state').classList.add('hidden');
             document.getElementById('product-layout').classList.remove('hidden');
         }
 
-        // Javascript to swap the large image when a small one is clicked
+        // Helper to extract YouTube ID
+        function getYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Javascript to swap the large image or video when a small one is clicked
         function changeMainImage(index) {
             const mainImgEl = document.getElementById('main-image');
+            const mainVidEl = document.getElementById('main-video');
+            const mediaUrl = currentImageArray[index];
+            const ytId = getYouTubeId(mediaUrl);
             
-            // Simple fade effect
-            mainImgEl.style.opacity = 0;
-            setTimeout(() => {
-                mainImgEl.src = currentImageArray[index];
-                mainImgEl.style.opacity = 1;
-            }, 150);
+            if(ytId) {
+                // Show Video, Hide Image
+                mainImgEl.classList.add('hidden');
+                mainVidEl.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+                mainVidEl.classList.remove('hidden');
+            } else {
+                // Show Image, Hide Video
+                mainVidEl.classList.add('hidden');
+                mainVidEl.src = ""; // Stop video playback
+                
+                mainImgEl.style.opacity = 0;
+                mainImgEl.classList.remove('hidden');
+                setTimeout(() => {
+                    mainImgEl.src = mediaUrl;
+                    mainImgEl.style.opacity = 1;
+                }, 150);
+            }
 
             // Update thumbnail borders
             currentImageArray.forEach((_, i) => {
@@ -260,14 +247,6 @@
                     }
                 }
             });
-        }
-
-        // Modal Controls
-        function openDemoModal() {
-            document.getElementById('demo-modal').classList.remove('hidden');
-        }
-        function closeDemoModal() {
-            document.getElementById('demo-modal').classList.add('hidden');
         }
 
         document.addEventListener('DOMContentLoaded', fetchProductDetails);
