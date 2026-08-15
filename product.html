@@ -28,15 +28,13 @@
         </div>
     </nav>
 
-    <!-- LOADING STATE -->
     <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
-        <div class="text-center text-slate-400">
-            <i class="ph ph-spinner animate-spin text-4xl mb-2"></i>
-            <p id="loading-text">Loading product...</p>
+        <div class="text-center text-slate-400" id="loading-content">
+            <i class="ph ph-spinner animate-spin text-4xl mb-2 mx-auto block"></i>
+            <p>Loading product...</p>
         </div>
     </div>
 
-    <!-- MAIN PRODUCT LAYOUT (Hidden until loaded) -->
     <main id="product-layout" class="hidden flex-grow max-w-7xl mx-auto px-6 py-12 w-full">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             
@@ -46,7 +44,7 @@
                     <img id="main-image" src="" class="w-full h-full object-cover absolute inset-0">
                 </div>
                 <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-                    <!-- Thumbnails go here -->
+                    <!-- Thumbnails dynamically injected here -->
                 </div>
             </div>
 
@@ -91,6 +89,7 @@
         const productId = urlParams.get('id');
         let currentImageArray = [];
 
+        // Safely detects if a URL is a YouTube link
         function getYoutubeId(url) {
             if (!url || typeof url !== 'string') return null;
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -99,20 +98,27 @@
         }
 
         async function fetchProductDetails() {
-            if(!productId) { window.location.href = 'index.html'; return; } 
+            const loadingBox = document.getElementById('loading-content');
+            
+            // Failsafe 1: No ID in URL
+            if(!productId) { 
+                loadingBox.innerHTML = '<p class="text-red-500 font-bold text-xl">Product ID missing.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Go Back</a>'; 
+                return; 
+            } 
 
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
                 const data = await res.json();
                 
+                // Failsafe 2: Product doesn't exist
                 if (!res.ok || !data || data.length === 0) {
-                    document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500 font-bold text-xl">Product not found. <br><a href="index.html" class="text-blue-500 underline mt-2 block">Go Back</a></div>`;
+                    loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Product not found in database.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Go Back</a>`;
                     return; 
                 }
                 
                 const p = data[0];
                 
-                // 1. Set Text
+                // Set Text Fields Safely
                 document.title = `${p.name || 'Product'} | Softode`;
                 document.getElementById('prod-category').innerText = p.category || 'Template';
                 document.getElementById('prod-title').innerText = p.name || 'Unnamed Product';
@@ -120,34 +126,29 @@
                 document.getElementById('prod-price').innerText = `$${p.price || '0'}`;
                 document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
                 
-                // 2. Set Checkout Button
                 document.getElementById('checkout-btn').onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
 
-                // 3. Set Demo Button
-                if(p.supplier) { 
-                    const demoUrls = p.supplier.split(',');
-                    const frontendUrl = demoUrls[0] ? demoUrls[0].trim() : '#';
+                if(p.supplier && p.supplier.trim() !== '') { 
                     document.getElementById('demo-container').classList.remove('hidden');
-                    document.getElementById('demo-btn').href = frontendUrl;
+                    document.getElementById('demo-btn').href = p.supplier.trim();
                 }
 
-                // 4. Set Image Gallery Array
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
                 
+                // If the user added images/youtube links, combine them!
                 if(p.image_gallery && typeof p.image_gallery === 'string') {
-                    // Split the comma-separated text into an array of URLs
                     const extraImages = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
                     currentImageArray = currentImageArray.concat(extraImages);
                 }
 
-                // 5. Build Thumbnails HTML
                 const thumbContainer = document.getElementById('thumbnail-container');
                 thumbContainer.innerHTML = '';
                 
                 if(currentImageArray.length > 1) {
                     currentImageArray.forEach((url, index) => {
                         const ytId = getYoutubeId(url);
+                        // If it's YouTube, grab the official thumbnail!
                         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
                         const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-3xl"></i></div>` : '';
                         const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
@@ -164,17 +165,17 @@
                 // Load first image
                 changeMainImage(0);
 
-                // Reveal Page Safely
+                // Reveal Page Safely!
                 document.getElementById('loading-state').classList.add('hidden');
                 document.getElementById('product-layout').classList.remove('hidden');
 
             } catch (err) {
+                // Failsafe 3: Database crash or network error
                 console.error("Crash details:", err);
-                document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500 font-bold text-xl">Javascript Error Occurred. <br><a href="index.html" class="text-blue-500 underline mt-2 block">Return Home</a></div>`;
+                loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Error connecting to database.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Return Home</a>`;
             }
         }
 
-        // Must be attached to the window object to be callable by the inline onclick HTML
         window.changeMainImage = function(index) {
             try {
                 const mainContainer = document.getElementById('main-image-container');
@@ -182,6 +183,7 @@
                 const ytId = getYoutubeId(url);
                 
                 mainContainer.style.opacity = 0;
+                
                 setTimeout(() => {
                     if(ytId) {
                         mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0 rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
@@ -191,6 +193,7 @@
                     mainContainer.style.opacity = 1;
                 }, 150);
 
+                // Update thumbnail borders
                 currentImageArray.forEach((_, i) => {
                     const thumbEl = document.getElementById(`thumb-${i}`);
                     if(thumbEl) {
@@ -208,7 +211,7 @@
             }
         };
 
-        // Guarantee execution directly
+        // Guarantee execution directly immediately
         fetchProductDetails();
     </script>
 </body>
