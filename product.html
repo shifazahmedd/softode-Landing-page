@@ -120,7 +120,7 @@
         const productId = urlParams.get('id');
         let currentImageArray = [];
 
-        // Safe YouTube ID extractor - Guaranteed not to crash
+        // Safe YouTube ID extractor
         function getYoutubeId(url) {
             if (!url || typeof url !== 'string') return null;
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -135,7 +135,7 @@
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
                 const data = await res.json();
                 
-                // BULLETPROOF CHECK: Stops JS from crashing if Supabase returned an error instead of product array
+                // BULLETPROOF CHECK
                 if (!res.ok || !Array.isArray(data) || data.length === 0) {
                     document.getElementById('loading-state').innerHTML = `
                         <div class="text-center text-red-500 flex flex-col items-center">
@@ -144,7 +144,7 @@
                             <p class="text-slate-500">This product was deleted or the database is misconfigured.</p>
                             <a href="index.html" class="px-6 py-3 bg-slate-900 text-white rounded-xl mt-6 inline-block hover:bg-black font-bold">Return Home</a>
                         </div>`;
-                    return; // Halts execution to prevent crash
+                    return; 
                 }
                 
                 const p = data[0];
@@ -157,8 +157,8 @@
                 document.getElementById('prod-price').innerText = `$${p.price || '0'}`;
                 document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
                 
-                // 2. Demo Link Setup
-                if(p.supplier && p.supplier.trim() !== '') { 
+                // 2. Demo Link Setup (Safe Optional Chaining)
+                if(p.supplier && typeof p.supplier === 'string' && p.supplier.trim() !== '') { 
                     const demoContainer = document.getElementById('demo-container');
                     const demoBtn = document.getElementById('demo-btn');
                     if(demoContainer && demoBtn) {
@@ -174,7 +174,6 @@
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
                 
-                // Safely handle gallery array or string
                 if(p.image_gallery) {
                     if (Array.isArray(p.image_gallery)) {
                         currentImageArray = currentImageArray.concat(p.image_gallery);
@@ -220,7 +219,6 @@
             }
         }
 
-        // Swap large image or embed YouTube when a thumbnail is clicked
         function changeMainImage(index) {
             const mainContainer = document.getElementById('main-image-container');
             const url = currentImageArray[index];
@@ -250,7 +248,8 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', fetchProductDetails);
+        // DIRECT CALL: Guarantees execution!
+        fetchProductDetails();
     </script>
 </body>
 </html>
