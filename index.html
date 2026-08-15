@@ -123,14 +123,13 @@
 
         async function loadCatalog() {
             try {
-                // Safest fetch: We removed strict sorting to prevent crashes if the column is missing in your DB
+                // Fetch directly, no strict ordering to prevent missing column crashes
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*`, { headers });
                 const products = await res.json();
                 
                 const grid = document.getElementById('product-grid');
                 grid.innerHTML = ''; 
 
-                // Bulletproof check: Ensure Supabase returned an actual array of products, not an error message
                 if (!res.ok || !Array.isArray(products)) {
                     grid.innerHTML = '<p class="col-span-full text-center text-red-500 py-10">Database connection error. Please verify your Supabase tables.</p>';
                     return;
@@ -141,10 +140,10 @@
                     return;
                 }
 
-                // Render each product. The ENTIRE <a> tag wraps everything, making the whole card clickable!
+                // The ENTIRE <a> tag wraps everything, making the whole card a massive clickable link!
                 products.forEach(p => {
                     grid.innerHTML += `
-                        <a href="product.html?id=${p.id}" class="block bg-white rounded-[2rem] border border-slate-100 shadow-soft flex flex-col overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
+                        <a href="product.html?id=${p.id}" class="block bg-white rounded-[2rem] border border-slate-100 shadow-soft flex flex-col overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer h-full">
                             <div class="h-56 bg-slate-100 overflow-hidden relative">
                                 <img src="${p.image || 'https://placehold.co/600x400'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                             </div>
@@ -156,7 +155,7 @@
                                 <p class="text-slate-500 text-sm mb-6 line-clamp-2">${p.description || ''}</p>
                                 <div class="mb-6"><span class="text-3xl font-extrabold text-slate-900">$${p.price}</span></div>
                                 <div class="mt-auto">
-                                    <div class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold group-hover:bg-primary-600 transition-all shadow-md flex items-center justify-center gap-2">
+                                    <div class="pointer-events-none w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold group-hover:bg-primary-600 transition-all shadow-md flex items-center justify-center gap-2">
                                         View Details <i class="ph-bold ph-arrow-right"></i>
                                     </div>
                                 </div>
@@ -168,7 +167,8 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', loadCatalog);
+        // DIRECT CALL: Bypasses the browser DOMContentLoaded bug guaranteeing it runs instantly
+        loadCatalog();
     </script>
 </body>
 </html>
