@@ -107,9 +107,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         let productId = urlParams.get('id');
 
-        // FALLBACK: If opened locally without an ID, use the Coffee Shop ID for testing
+        // FALLBACK: If opened locally (from Downloads) without an ID, use this ID for testing
         if (!productId) {
-            console.warn("No ID found in URL. Using Demo Coffee Shop ID.");
+            console.warn("No ID found in URL. Using Demo ID.");
             productId = '1786817016279'; 
         }
 
@@ -129,6 +129,7 @@
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
+        // Display errors gracefully
         function showError(message) {
             const loadingState = document.getElementById('loading-state');
             const errorState = document.getElementById('error-state');
@@ -155,6 +156,7 @@
                 
                 const p = data[0];
                 
+                // Safely load all text elements
                 document.title = `${p.name || 'Product'} | Softode`;
                 safeSetText('prod-category', p.category || 'Digital Product');
                 safeSetText('prod-title', p.name || 'Unnamed Product');
@@ -162,11 +164,13 @@
                 safeSetText('prod-price', `$${p.price || '0'}`);
                 safeSetText('prod-full-desc', p.full_description || 'No detailed overview provided.');
 
+                // Safely handle Checkout button
                 const checkoutBtn = document.getElementById('checkout-btn');
                 if (checkoutBtn) {
                     checkoutBtn.onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
                 }
 
+                // Safely handle Demo Button
                 if (p.supplier && p.supplier.trim() !== '') { 
                     const demoContainer = document.getElementById('demo-container');
                     const demoLinkBtn = document.getElementById('demo-link-btn');
@@ -176,6 +180,7 @@
                     }
                 }
 
+                // Handle Image/Video Gallery
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
                 
@@ -208,8 +213,10 @@
                     }
                 }
 
+                // Initialize the gallery view
                 if (window.changeMainImage) window.changeMainImage(0);
 
+                // Reveal Page safely
                 const loadingState = document.getElementById('loading-state');
                 const productLayout = document.getElementById('product-layout');
                 if (loadingState) loadingState.classList.add('hidden');
@@ -221,6 +228,7 @@
             }
         }
 
+        // Make function globally accessible for inline onclick handlers
         window.changeMainImage = function(index) {
             try {
                 const mainContainer = document.getElementById('main-image-container');
@@ -257,6 +265,7 @@
             }
         };
 
+        // Fire the load function
         loadProduct();
     </script>
 </body>
