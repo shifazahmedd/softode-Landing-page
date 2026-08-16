@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,24 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { 
-                        sans: ['Inter', 'sans-serif'], 
-                        heading: ['Plus Jakarta Sans', 'sans-serif'], 
-                    },
-                    colors: { 
-                        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } 
-                    }
-                }
-            }
-        }
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } } } } }
     </script>
     <style>
         .active-thumb { border: 2px solid #2563eb; opacity: 1; }
         .inactive-thumb { border: 2px solid transparent; opacity: 0.6; }
-        .inactive-thumb:hover { opacity: 1; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -35,59 +22,65 @@
     <!-- Navigation -->
     <nav class="bg-white border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900" href="/">
-                <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white">
-                    <i class="ph-bold ph-lightning"></i>
-                </div>
-                Soft<span class="text-primary-600">ode</span>
+            <a href="index.html" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
+                <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>Soft<span class="text-primary-600">ode</span>
             </a>
-            <a class="text-sm font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1" href="/">
-                <i class="ph-bold ph-arrow-left"></i> Back to Store
-            </a>
+            <a href="index.html" class="text-sm font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1"><i class="ph-bold ph-arrow-left"></i> Back to Store</a>
         </div>
     </nav>
 
     <!-- Loading State -->
     <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
         <div class="text-center text-slate-400">
-            <i class="ph ph-spinner animate-spin text-4xl mb-2"></i>
-            <p>Loading product...</p>
+            <i class="ph ph-spinner animate-spin text-4xl mb-2 mx-auto block"></i>
+            <p>Authenticating Product...</p>
         </div>
     </div>
 
-    <!-- Product Layout -->
-    <main id="product-layout" class="flex-grow max-w-7xl mx-auto px-6 py-12 w-full hidden">
+    <!-- Error State -->
+    <div id="error-state" class="hidden flex-grow flex items-center justify-center py-32 px-6">
+        <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md w-full text-center">
+            <i class="ph-fill ph-warning-circle text-red-500 text-5xl mb-3"></i>
+            <h3 class="text-red-700 font-bold text-xl mb-2">Oops! Something went wrong.</h3>
+            <p id="error-message" class="text-sm text-red-600 mb-6">Could not load product details.</p>
+            <a href="index.html" class="inline-block bg-white border border-red-200 px-6 py-2.5 rounded-xl text-red-700 font-bold text-sm hover:bg-red-50 transition-colors">Return to Store</a>
+        </div>
+    </div>
+
+    <!-- Main Product Layout -->
+    <main id="product-layout" class="hidden flex-grow max-w-7xl mx-auto px-6 py-12 w-full">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             
-            <!-- LEFT: Image Slider -->
+            <!-- LEFT: Image/Video Slider -->
             <div class="w-full space-y-4 sticky top-6">
-                <div class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative">
-                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover transition-opacity duration-300 absolute inset-0 z-10">
-                    <iframe id="main-video" src="" class="w-full h-full absolute inset-0 z-20 hidden" frameborder="0" allowfullscreen></iframe>
+                <div id="main-image-container" class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm transition-opacity duration-300 relative">
+                    <img id="main-image" src="" class="w-full h-full object-cover absolute inset-0">
                 </div>
-                <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar"></div>
+                <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
+                    <!-- Thumbnails dynamically injected here -->
+                </div>
             </div>
 
             <!-- RIGHT: Product Details -->
             <div class="flex flex-col">
-                <span id="prod-category" class="text-xs font-black uppercase tracking-wider text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg inline-block self-start mb-4">Template</span>
-                <h1 id="prod-title" class="font-heading text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">...</h1>
-                <p id="prod-short-desc" class="text-lg text-slate-500 mb-8 leading-relaxed"></p>
+                <span id="prod-category" class="text-xs font-black uppercase tracking-wider text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg inline-block self-start mb-4">Category</span>
+                <h1 id="prod-title" class="font-heading text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">Product Title</h1>
+                <p id="prod-short-desc" class="text-lg text-slate-500 mb-8 leading-relaxed">Short description goes here.</p>
 
                 <div class="p-6 bg-white rounded-3xl border border-slate-200 shadow-sm mb-10">
                     <div class="flex items-end gap-2 mb-2">
                         <span id="prod-price" class="text-5xl font-black text-slate-900">$0</span>
                         <span class="text-slate-500 font-medium mb-1">/ one-time payment</span>
                     </div>
-                    <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6">
-                        <i class="ph-fill ph-check-circle"></i> Managed Hosting Included
-                    </p>
-                    <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2">
+                    <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6"><i class="ph-fill ph-check-circle"></i> Instant Access</p>
+                    
+                    <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2 mb-3">
                         Proceed to Checkout <i class="ph-bold ph-lock-key"></i>
                     </button>
-                    <div id="demo-container" class="mt-4 hidden">
-                        <a id="demo-link" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
-                            View Live Demo <i class="ph-bold ph-monitor-play"></i>
+                    
+                    <div id="demo-container" class="hidden">
+                        <a id="demo-link-btn" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                            View Live Demo <i class="ph-bold ph-arrow-square-out"></i>
                         </a>
                     </div>
                 </div>
@@ -100,109 +93,171 @@
         </div>
     </main>
 
-    <footer class="bg-white border-t border-slate-200 mt-20 pt-8 pb-8">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <p class="text-sm text-slate-400 font-medium">© 2026 Softode. All rights reserved.</p>
-        </div>
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-8 text-center text-slate-500 text-sm mt-auto">
+        &copy; 2026 Softode. All rights reserved.
     </footer>
 
     <script>
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
-        const headers = { 
-            'apikey': SUPABASE_KEY, 
-            'Authorization': 'Bearer ' + SUPABASE_KEY, 
-            'Content-Type': 'application/json' 
-        };
+        const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
+        // 1. Get the ID from the URL
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
+        let productId = urlParams.get('id');
+
+        // FALLBACK: If opened locally without an ID, use the Coffee Shop ID for testing
+        if (!productId) {
+            console.warn("No ID found in URL. Using Demo Coffee Shop ID.");
+            productId = '1786817016279'; 
+        }
+
         let currentImageArray = [];
 
-        async function fetchProductDetails() {
-            if(!productId) { window.location.href = 'index.html'; return; }
-            try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
-                const data = await res.json();
-                if(!data || data.length === 0) { throw new Error("Product not found"); }
-                renderProduct(data[0]);
-            } catch (err) {
-                document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500"><p class="font-bold text-xl mb-2">Oops!</p><p>Product not found.</p></div>`;
-            }
+        // DEFENSIVE HELPER: Safely update text
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
         }
 
-        function renderProduct(p) {
-            document.title = `${p.name} | Softode`;
-            document.getElementById('prod-category').innerText = p.category || 'Template';
-            document.getElementById('prod-title').innerText = p.name;
-            document.getElementById('prod-short-desc').innerText = p.description || '';
-            document.getElementById('prod-price').innerText = `$${p.price}`;
-            document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided.';
-            
-            if(p.supplier) {
-                document.getElementById('demo-container').classList.remove('hidden');
-                document.getElementById('demo-link').href = p.supplier.split(',')[0].trim();
-            }
-
-            document.getElementById('checkout-btn').onclick = () => {
-                window.location.href = `checkout.html?id=${p.id}`;
-            };
-
-            currentImageArray = [p.image || 'https://placehold.co/800x600'];
-            if(p.image_gallery && Array.isArray(p.image_gallery)) {
-                currentImageArray = currentImageArray.concat(p.image_gallery);
-            }
-
-            const thumbContainer = document.getElementById('thumbnail-container');
-            thumbContainer.innerHTML = '';
-            currentImageArray.forEach((mediaUrl, index) => {
-                const ytId = getYouTubeId(mediaUrl);
-                const thumbSrc = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : mediaUrl;
-                thumbContainer.innerHTML += `
-                    <button onclick="changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${index === 0 ? 'active-thumb' : 'inactive-thumb'}">
-                        <img src="${thumbSrc}" class="w-full h-full object-cover pointer-events-none">
-                    </button>`;
-            });
-
-            changeMainImage(0);
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('product-layout').classList.remove('hidden');
-        }
-
-        function getYouTubeId(url) {
-            if (!url) return null;
+        // DEFENSIVE HELPER: Youtube links
+        function getYoutubeId(url) {
+            if (!url || typeof url !== 'string') return null;
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
             const match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        function changeMainImage(index) {
-            const mainImgEl = document.getElementById('main-image');
-            const mainVidEl = document.getElementById('main-video');
-            const mediaUrl = currentImageArray[index];
-            const ytId = getYouTubeId(mediaUrl);
+        function showError(message) {
+            const loadingState = document.getElementById('loading-state');
+            const errorState = document.getElementById('error-state');
+            const productLayout = document.getElementById('product-layout');
             
-            if(ytId) {
-                mainImgEl.classList.add('hidden');
-                mainVidEl.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
-                mainVidEl.classList.remove('hidden');
-            } else {
-                mainVidEl.classList.add('hidden');
-                mainVidEl.src = "";
-                mainImgEl.src = mediaUrl;
-                mainImgEl.classList.remove('hidden');
+            if (loadingState) loadingState.classList.add('hidden');
+            if (productLayout) productLayout.classList.add('hidden');
+            
+            if (errorState) {
+                errorState.classList.remove('hidden');
+                const msgEl = document.getElementById('error-message');
+                if (msgEl) msgEl.innerText = message;
             }
-
-            currentImageArray.forEach((_, i) => {
-                const thumbEl = document.getElementById(`thumb-${i}`);
-                if(thumbEl) {
-                    thumbEl.classList.toggle('active-thumb', i === index);
-                    thumbEl.classList.toggle('inactive-thumb', i !== index);
-                }
-            });
         }
 
-        document.addEventListener('DOMContentLoaded', fetchProductDetails);
+        async function loadProduct() {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
+                
+                if (!res.ok) throw new Error("Failed to connect to the database.");
+                
+                const data = await res.json();
+                if (!data || data.length === 0) throw new Error("Product not found or has been removed.");
+                
+                const p = data[0];
+                
+                document.title = `${p.name || 'Product'} | Softode`;
+                safeSetText('prod-category', p.category || 'Digital Product');
+                safeSetText('prod-title', p.name || 'Unnamed Product');
+                safeSetText('prod-short-desc', p.description || '');
+                safeSetText('prod-price', `$${p.price || '0'}`);
+                safeSetText('prod-full-desc', p.full_description || 'No detailed overview provided.');
+
+                const checkoutBtn = document.getElementById('checkout-btn');
+                if (checkoutBtn) {
+                    checkoutBtn.onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
+                }
+
+                if (p.supplier && p.supplier.trim() !== '') { 
+                    const demoContainer = document.getElementById('demo-container');
+                    const demoLinkBtn = document.getElementById('demo-link-btn');
+                    if (demoContainer && demoLinkBtn) {
+                        demoContainer.classList.remove('hidden');
+                        demoLinkBtn.href = p.supplier.split(',')[0].trim();
+                    }
+                }
+
+                const mainImg = p.image || 'https://placehold.co/800x600';
+                currentImageArray = [mainImg];
+                
+                if (p.image_gallery) {
+                    if (typeof p.image_gallery === 'string') {
+                        const extraImages = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
+                        currentImageArray = currentImageArray.concat(extraImages);
+                    } else if (Array.isArray(p.image_gallery)) {
+                        currentImageArray = currentImageArray.concat(p.image_gallery);
+                    }
+                }
+
+                const thumbContainer = document.getElementById('thumbnail-container');
+                if (thumbContainer) {
+                    thumbContainer.innerHTML = '';
+                    if (currentImageArray.length > 1) {
+                        currentImageArray.forEach((url, index) => {
+                            const ytId = getYoutubeId(url);
+                            const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
+                            const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
+                            const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
+                            
+                            thumbContainer.innerHTML += `
+                                <button onclick="window.changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                                    <img src="${thumbUrl}" class="w-full h-full object-cover pointer-events-none">
+                                    ${playIcon}
+                                </button>
+                            `;
+                        });
+                    }
+                }
+
+                if (window.changeMainImage) window.changeMainImage(0);
+
+                const loadingState = document.getElementById('loading-state');
+                const productLayout = document.getElementById('product-layout');
+                if (loadingState) loadingState.classList.add('hidden');
+                if (productLayout) productLayout.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Product Page Error:", error);
+                showError(error.message);
+            }
+        }
+
+        window.changeMainImage = function(index) {
+            try {
+                const mainContainer = document.getElementById('main-image-container');
+                if (!mainContainer || !currentImageArray[index]) return;
+
+                const url = currentImageArray[index];
+                const ytId = getYoutubeId(url);
+                
+                mainContainer.style.opacity = 0;
+                
+                setTimeout(() => {
+                    if(ytId) {
+                        mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0 rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                    } else {
+                        mainContainer.innerHTML = `<img src="${url}" class="w-full h-full object-cover absolute inset-0 rounded-3xl">`;
+                    }
+                    mainContainer.style.opacity = 1;
+                }, 150);
+
+                currentImageArray.forEach((_, i) => {
+                    const thumbEl = document.getElementById(`thumb-${i}`);
+                    if(thumbEl) {
+                        if(i === index) {
+                            thumbEl.classList.remove('inactive-thumb');
+                            thumbEl.classList.add('active-thumb');
+                        } else {
+                            thumbEl.classList.remove('active-thumb');
+                            thumbEl.classList.add('inactive-thumb');
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Gallery Error:", e);
+            }
+        };
+
+        loadProduct();
     </script>
 </body>
 </html>
