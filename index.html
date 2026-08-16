@@ -42,7 +42,7 @@
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16"><h2 class="font-heading text-4xl md:text-5xl font-bold mb-4 text-slate-900">Permanent Websites</h2></div>
             <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="col-span-full text-center text-slate-400 py-10"><i class="ph ph-spinner animate-spin text-3xl"></i><br>Loading Catalog...</div>
+                <div class="col-span-full text-center text-slate-400 py-10"><i class="ph ph-spinner animate-spin text-3xl mb-2 mx-auto block"></i><br>Loading Catalog...</div>
             </div>
         </div>
     </section>
@@ -53,28 +53,31 @@
         const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
         async function loadCatalog() {
+            console.log("Starting Catalog Fetch...");
             const grid = document.getElementById('product-grid');
             try {
                 let products = [];
-                // Failsafe fetch logic to prevent loading crash!
+                // Failsafe fetch logic to prevent crashes!
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*&order=sort_order.desc,id.desc`, { headers });
                 
                 if (!res.ok) {
-                    console.warn("Custom columns missing, falling back to basic data.");
+                    console.warn("Sorting fetch failed. Database might be missing sort_order column. Using fallback.");
                     const fallback = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*`, { headers });
                     if(fallback.ok) products = await fallback.json();
+                    else throw new Error("Fallback fetch also failed.");
                 } else {
                     products = await res.json();
                 }
                 
                 grid.innerHTML = ''; 
+                console.log("Products Loaded:", products.length);
 
                 if (!products || products.length === 0) {
                     grid.innerHTML = '<p class="col-span-full text-center text-slate-500 py-10">Storefront is empty.</p>';
                     return;
                 }
 
-                // Make the entire card a clickable <a> tag to guarantee UX works!
+                // Make the entire card a clickable <a> tag ensuring UX works flawlessly
                 products.forEach(p => {
                     grid.innerHTML += `
                         <a href="product.html?id=${p.id}" class="block bg-white rounded-[2rem] border border-slate-100 shadow-sm flex flex-col overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer h-full relative z-10">
@@ -93,7 +96,8 @@
                         </a>`;
                 });
             } catch (err) { 
-                grid.innerHTML = '<p class="col-span-full text-center text-red-500 py-10">Error connecting to database. Please refresh.</p>';
+                console.error("Critical Error Fetching Catalog:", err);
+                grid.innerHTML = `<p class="col-span-full text-center text-red-500 py-10"><b>Error connecting to database:</b><br>${err.message}</p>`;
             }
         }
         
