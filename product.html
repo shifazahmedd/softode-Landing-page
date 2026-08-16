@@ -28,6 +28,7 @@
         </div>
     </nav>
 
+    <!-- Essential Loading Box that we control with JS -->
     <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
         <div class="text-center text-slate-400" id="loading-content">
             <i class="ph ph-spinner animate-spin text-4xl mb-2 mx-auto block"></i>
@@ -66,8 +67,9 @@
                     </button>
                     
                     <div id="demo-container" class="mt-4 hidden">
+                        <!-- DIRECT DEMO LINK (No confusing popups!) -->
                         <a id="demo-btn" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
-                            View Live Demo <i class="ph-bold ph-monitor-play"></i>
+                            View Live Demo <i class="ph-bold ph-arrow-square-out"></i>
                         </a>
                     </div>
                 </div>
@@ -89,6 +91,14 @@
         const productId = urlParams.get('id');
         let currentImageArray = [];
 
+        // Global Error Catcher to prevent eternal loading spinners
+        window.addEventListener('error', function(event) {
+            const loadingBox = document.getElementById('loading-content');
+            if (loadingBox) {
+                loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Display Error Caught</p><p class="text-sm text-slate-500">${event.message}</p><br><a href="index.html" class="text-blue-500 underline font-medium">Return to Home</a>`;
+            }
+        });
+
         // Safely detects if a URL is a YouTube link
         function getYoutubeId(url) {
             if (!url || typeof url !== 'string') return null;
@@ -100,25 +110,26 @@
         async function fetchProductDetails() {
             const loadingBox = document.getElementById('loading-content');
             
-            // Failsafe 1: No ID in URL
             if(!productId) { 
-                loadingBox.innerHTML = '<p class="text-red-500 font-bold text-xl">Product ID missing.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Go Back</a>'; 
+                loadingBox.innerHTML = '<p class="text-red-500 font-bold text-xl">No Product ID provided.</p><br><a href="index.html" class="text-blue-500 underline">Go Back</a>'; 
                 return; 
             } 
 
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
+                
+                if (!res.ok) throw new Error("Supabase API rejected the request. Does the ID exist?");
+                
                 const data = await res.json();
                 
-                // Failsafe 2: Product doesn't exist
-                if (!res.ok || !data || data.length === 0) {
-                    loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Product not found in database.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Go Back</a>`;
+                if (!data || data.length === 0) {
+                    loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Product not found.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Go Back</a>`;
                     return; 
                 }
                 
                 const p = data[0];
                 
-                // Set Text Fields Safely
+                // Safely update all text elements
                 document.title = `${p.name || 'Product'} | Softode`;
                 document.getElementById('prod-category').innerText = p.category || 'Template';
                 document.getElementById('prod-title').innerText = p.name || 'Unnamed Product';
@@ -128,15 +139,16 @@
                 
                 document.getElementById('checkout-btn').onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
 
+                // Direct link setup for Live Demo
                 if(p.supplier && p.supplier.trim() !== '') { 
                     document.getElementById('demo-container').classList.remove('hidden');
-                    document.getElementById('demo-btn').href = p.supplier.trim();
+                    document.getElementById('demo-btn').href = p.supplier.split(',')[0].trim(); // Takes first link if multiple
                 }
 
+                // Setup Image / Video Gallery Safely
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
                 
-                // If the user added images/youtube links, combine them!
                 if(p.image_gallery && typeof p.image_gallery === 'string') {
                     const extraImages = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
                     currentImageArray = currentImageArray.concat(extraImages);
@@ -148,7 +160,6 @@
                 if(currentImageArray.length > 1) {
                     currentImageArray.forEach((url, index) => {
                         const ytId = getYoutubeId(url);
-                        // If it's YouTube, grab the official thumbnail!
                         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
                         const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-3xl"></i></div>` : '';
                         const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
@@ -162,17 +173,15 @@
                     });
                 }
 
-                // Load first image
                 changeMainImage(0);
 
-                // Reveal Page Safely!
+                // Reveal Page!
                 document.getElementById('loading-state').classList.add('hidden');
                 document.getElementById('product-layout').classList.remove('hidden');
 
             } catch (err) {
-                // Failsafe 3: Database crash or network error
                 console.error("Crash details:", err);
-                loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Error connecting to database.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Return Home</a>`;
+                loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Data Error:</p><p class="text-sm text-slate-500">${err.message}</p><br><a href="index.html" class="text-blue-500 underline">Return Home</a>`;
             }
         }
 
@@ -193,7 +202,6 @@
                     mainContainer.style.opacity = 1;
                 }, 150);
 
-                // Update thumbnail borders
                 currentImageArray.forEach((_, i) => {
                     const thumbEl = document.getElementById(`thumb-${i}`);
                     if(thumbEl) {
