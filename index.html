@@ -3,142 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Storefront | Softode</title>
+    <title>Softode | Own Your Digital Real Estate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } } } } }
+        tailwind.config = {
+            theme: {
+                extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }, accent: { 500: '#8b5cf6' } } }
+            }
+        }
     </script>
+    <style>
+        .text-gradient { background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .bg-gradient-tech { background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%); }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen">
-
-    <!-- Navigation -->
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    
+    <nav class="fixed w-full z-50 bg-white/70 backdrop-blur-md border-b border-slate-200/50">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <a href="index.html" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
-                <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>Soft<span class="text-primary-600">ode</span>
+                <div class="w-8 h-8 rounded-lg bg-gradient-tech flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>Soft<span class="text-primary-600">ode</span>
             </a>
-            <div class="flex items-center gap-4">
-                <a href="#products" class="text-sm font-bold text-slate-500 hover:text-slate-900 hidden sm:block">Browse Products</a>
-                <a href="admin.html" class="text-sm font-bold bg-slate-100 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-200 transition">Admin Panel</a>
-            </div>
+            <a href="#products" class="inline-flex items-center justify-center bg-slate-900 text-white px-6 py-2.5 rounded-xl font-medium text-sm hover:bg-primary-600 transition-all">Shop Now</a>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="bg-white border-b border-slate-200 py-20 px-6 text-center">
-        <div class="max-w-3xl mx-auto">
-            <h1 class="font-heading text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight">Premium Digital Assets for Creators</h1>
-            <p class="text-lg text-slate-500 mb-8 leading-relaxed">Launch your next project faster with our high-quality templates, scripts, and digital tools.</p>
+    <section id="hero" class="pt-32 pb-20 md:pt-40 md:pb-32 px-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 border border-primary-100 text-primary-700 text-sm font-semibold mb-6">Managed Hosting Included</div>
+            <h1 class="font-heading text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 text-slate-900">Launch Your Digital <br class="hidden lg:block"><span class="text-gradient">Empire Instantly.</span></h1>
+            <p class="text-lg md:text-xl text-slate-600 mb-10 max-w-xl mx-auto leading-relaxed">Premium, production-ready website templates, admin panels, and custom software. Fully managed for your business.</p>
         </div>
-    </header>
+    </section>
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto px-6 py-16 w-full" id="products">
-        <div class="flex items-center justify-between mb-8">
-            <h2 class="font-heading text-2xl font-bold text-slate-900">Latest Products</h2>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loading-state" class="py-20 text-center text-slate-400">
-            <i class="ph ph-spinner animate-spin text-4xl mb-2 mx-auto block"></i>
-            <p>Loading catalog...</p>
-        </div>
-
-        <!-- Error State -->
-        <div id="error-state" class="hidden py-12 text-center">
-            <div class="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-200 inline-block max-w-lg">
-                <i class="ph-fill ph-warning-circle text-4xl mb-2"></i>
-                <h3 class="font-bold text-lg mb-1">Failed to load products</h3>
-                <p id="error-message" class="text-sm">Please check your database connection.</p>
+    <section id="products" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16"><h2 class="font-heading text-4xl md:text-5xl font-bold mb-4 text-slate-900">Permanent Websites</h2></div>
+            <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="col-span-full text-center text-slate-400 py-10"><i class="ph ph-spinner animate-spin text-3xl"></i><br>Loading Catalog...</div>
             </div>
         </div>
-
-        <!-- Products Grid -->
-        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 hidden">
-            <!-- Product Cards will be injected here -->
-        </div>
-    </main>
-
-    <footer class="bg-white border-t border-slate-200 py-8 text-center text-slate-500 text-sm mt-auto">
-        &copy; 2026 Softode. All rights reserved.
-    </footer>
+    </section>
 
     <script>
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
         const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
-        async function loadStorefront() {
+        async function loadCatalog() {
+            const grid = document.getElementById('product-grid');
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*`, { headers });
+                let products = [];
+                // Failsafe fetch logic to prevent loading crash!
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*&order=sort_order.desc,id.desc`, { headers });
                 
-                if (!res.ok) throw new Error("Could not connect to the Supabase database.");
-                
-                const products = await res.json();
-                const grid = document.getElementById('products-grid');
-                const loading = document.getElementById('loading-state');
-                
-                if (!grid || !loading) return; // Safety check
-                
-                grid.innerHTML = '';
-                
-                if (products.length === 0) {
-                    grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-200">No products found. Add some in the Admin Panel!</div>`;
+                if (!res.ok) {
+                    console.warn("Custom columns missing, falling back to basic data.");
+                    const fallback = await fetch(`${SUPABASE_URL}/rest/v1/catalog?select=*`, { headers });
+                    if(fallback.ok) products = await fallback.json();
                 } else {
-                    // Sort by sort_order safely, default to 0 if missing
-                    products.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+                    products = await res.json();
+                }
+                
+                grid.innerHTML = ''; 
 
-                    products.forEach(p => {
-                        const imgUrl = p.image || 'https://placehold.co/600x400';
-                        const price = p.price ? `$${p.price}` : 'Free';
-                        const category = p.category || 'Digital Asset';
-                        const title = p.name || 'Unnamed Product';
-                        
-                        grid.innerHTML += `
-                            <a href="product.html?id=${p.id}" class="group bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-primary-200 transition-all duration-300 flex flex-col h-full">
-                                <div class="w-full aspect-video bg-slate-100 overflow-hidden relative">
-                                    <img src="${imgUrl}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                    <div class="absolute top-3 left-3 bg-white/90 backdrop-blur text-xs font-bold px-3 py-1.5 rounded-lg text-slate-700 uppercase tracking-wide">
-                                        ${category}
-                                    </div>
-                                </div>
-                                <div class="p-6 flex flex-col flex-grow">
-                                    <h3 class="font-heading text-xl font-bold text-slate-900 mb-2 line-clamp-1 group-hover:text-primary-600 transition-colors">${title}</h3>
-                                    <p class="text-slate-500 text-sm mb-6 line-clamp-2">${p.description || ''}</p>
-                                    <div class="mt-auto flex items-center justify-between">
-                                        <span class="text-2xl font-black text-slate-900">${price}</span>
-                                        <div class="w-10 h-10 rounded-full bg-slate-50 group-hover:bg-primary-50 text-slate-400 group-hover:text-primary-600 flex items-center justify-center transition-colors">
-                                            <i class="ph-bold ph-arrow-right"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        `;
-                    });
+                if (!products || products.length === 0) {
+                    grid.innerHTML = '<p class="col-span-full text-center text-slate-500 py-10">Storefront is empty.</p>';
+                    return;
                 }
 
-                loading.classList.add('hidden');
-                grid.classList.remove('hidden');
-
-            } catch (error) {
-                console.error("Storefront Error:", error);
-                const loading = document.getElementById('loading-state');
-                const errorState = document.getElementById('error-state');
-                if (loading) loading.classList.add('hidden');
-                if (errorState) {
-                    errorState.classList.remove('hidden');
-                    const msg = document.getElementById('error-message');
-                    if(msg) msg.innerText = error.message;
-                }
+                // Make the entire card a clickable <a> tag to guarantee UX works!
+                products.forEach(p => {
+                    grid.innerHTML += `
+                        <a href="product.html?id=${p.id}" class="block bg-white rounded-[2rem] border border-slate-100 shadow-sm flex flex-col overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer h-full relative z-10">
+                            <div class="h-56 bg-slate-100 overflow-hidden relative">
+                                <img src="${p.image || 'https://placehold.co/600x400'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            </div>
+                            <div class="p-8 flex flex-col flex-grow">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-primary-600 bg-primary-50 px-2 py-1 rounded-md inline-block self-start mb-3">${p.category || 'Template'}</span>
+                                <h3 class="font-heading text-xl font-bold mb-2 text-slate-900">${p.name}</h3>
+                                <p class="text-slate-500 text-sm mb-6 line-clamp-2">${p.description || ''}</p>
+                                <div class="mb-6"><span class="text-3xl font-extrabold text-slate-900">$${p.price}</span></div>
+                                <div class="mt-auto">
+                                    <div class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold group-hover:bg-primary-600 transition-all shadow-md flex items-center justify-center gap-2">View Details <i class="ph-bold ph-arrow-right"></i></div>
+                                </div>
+                            </div>
+                        </a>`;
+                });
+            } catch (err) { 
+                grid.innerHTML = '<p class="col-span-full text-center text-red-500 py-10">Error connecting to database. Please refresh.</p>';
             }
         }
-
-        // Initialize Storefront
-        loadStorefront();
+        
+        loadCatalog();
     </script>
 </body>
 </html>
-
-
