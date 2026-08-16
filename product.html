@@ -145,20 +145,31 @@
                 
                 const p = data[0];
                 
-                // Safely update all text elements
+                // Safely update all text elements using Chrome AI's recommended safety checks
                 document.title = `${p.name || 'Product'} | Softode`;
-                document.getElementById('prod-category').innerText = p.category || 'Template';
-                document.getElementById('prod-title').innerText = p.name || 'Unnamed Product';
-                document.getElementById('prod-short-desc').innerText = p.description || '';
-                document.getElementById('prod-price').innerText = `$${p.price || '0'}`;
-                document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
                 
-                document.getElementById('checkout-btn').onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
+                const safeUpdate = (id, text) => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = text;
+                };
 
-                // Setup Direct Live Demo Link
+                safeUpdate('prod-category', p.category || 'Template');
+                safeUpdate('prod-title', p.name || 'Unnamed Product');
+                safeUpdate('prod-short-desc', p.description || '');
+                safeUpdate('prod-price', `$${p.price || '0'}`);
+                safeUpdate('prod-full-desc', p.full_description || 'No detailed overview provided for this product.');
+                
+                const checkoutBtn = document.getElementById('checkout-btn');
+                if (checkoutBtn) checkoutBtn.onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
+
+                // Setup Direct Live Demo Link Safely
                 if(p.supplier && p.supplier.trim() !== '') { 
-                    document.getElementById('demo-container').classList.remove('hidden');
-                    document.getElementById('demo-link-btn').href = p.supplier.split(',')[0].trim();
+                    const demoContainer = document.getElementById('demo-container');
+                    const demoLink = document.getElementById('demo-link-btn');
+                    if (demoContainer && demoLink) {
+                        demoContainer.classList.remove('hidden');
+                        demoLink.href = p.supplier.split(',')[0].trim();
+                    }
                 }
 
                 // Setup Image / Video Gallery Safely
