@@ -32,7 +32,8 @@
     <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
         <div class="text-center text-slate-400" id="loading-content">
             <i class="ph ph-spinner animate-spin text-4xl mb-2 mx-auto block"></i>
-            <p>Loading product...</p>
+            <!-- CACHE BUSTER TEXT: If you don't see this exact text on your live site, your browser is caching the old file! -->
+            <p class="font-medium mt-2 text-slate-500">Connecting to Secure Server...</p>
         </div>
     </div>
 
@@ -83,7 +84,6 @@
     </main>
 
     <script>
-        console.log("1. Product Script Init");
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
         const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
@@ -92,20 +92,20 @@
         const productId = urlParams.get('id');
         let currentImageArray = [];
 
-        // Global Error Catcher to prevent eternal loading spinners
-        window.addEventListener('error', function(event) {
-            console.error("Global Catch:", event.error);
+        // Unbreakable Global Error Catcher
+        window.onerror = function(msg, url, line) {
             const loadingBox = document.getElementById('loading-content');
             if (loadingBox) {
                 loadingBox.innerHTML = `
                     <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto">
                         <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
-                        <h3 class="text-red-700 font-bold text-xl mb-1">System Error</h3>
-                        <p class="text-sm text-red-600 mb-4">${event.message}</p>
+                        <h3 class="text-red-700 font-bold text-xl mb-1">Critical Script Error</h3>
+                        <p class="text-sm text-red-600 mb-4">${msg}</p>
                         <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
                     </div>`;
             }
-        });
+            return false;
+        };
 
         // Safely detects if a URL is a YouTube link
         function getYoutubeId(url) {
@@ -116,27 +116,30 @@
         }
 
         async function fetchProductDetails() {
-            console.log("2. Fetching ID:", productId);
             const loadingBox = document.getElementById('loading-content');
             
             if(!productId) { 
-                loadingBox.innerHTML = '<p class="text-red-500 font-bold text-xl">No Product ID provided.</p><br><a href="index.html" class="text-blue-500 underline font-medium">Go Back</a>'; 
+                loadingBox.innerHTML = '<p class="text-red-500 font-bold text-xl">No Product ID provided.</p><br><a href="index.html" class="text-blue-500 underline font-medium">Go Back to Store</a>'; 
                 return; 
             } 
 
             try {
+                // Fetch with explicit timeout protection
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
                 
                 if (!res.ok) {
                     const errTxt = await res.text();
-                    throw new Error("Database returned an error: " + errTxt);
+                    throw new Error(errTxt || "The database rejected the connection.");
                 }
                 
                 const data = await res.json();
-                console.log("3. Data received:", data);
                 
                 if (!data || data.length === 0) {
-                    loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Product not found.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Return to Store</a>`;
+                    loadingBox.innerHTML = `
+                        <i class="ph-fill ph-magnifying-glass text-slate-300 text-5xl mb-3 block"></i>
+                        <p class="text-slate-600 font-bold text-xl">Product not found.</p>
+                        <p class="text-slate-400 text-sm mt-1">This product may have been deleted.</p>
+                        <a href="index.html" class="text-primary-600 hover:text-primary-700 font-bold mt-4 block">Return to Store</a>`;
                     return; 
                 }
                 
@@ -155,7 +158,6 @@
                 // Setup Direct Live Demo Link
                 if(p.supplier && p.supplier.trim() !== '') { 
                     document.getElementById('demo-container').classList.remove('hidden');
-                    // We grab the first link if multiple exist
                     document.getElementById('demo-link-btn').href = p.supplier.split(',')[0].trim();
                 }
 
@@ -163,7 +165,6 @@
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
                 
-                // Safe parsing of image_gallery in case it's stored weirdly in DB
                 if(p.image_gallery) {
                     let extraImages = [];
                     if(typeof p.image_gallery === 'string') {
@@ -181,7 +182,7 @@
                     currentImageArray.forEach((url, index) => {
                         const ytId = getYoutubeId(url);
                         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
-                        const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
+                        const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
                         const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
                         
                         thumbContainer.innerHTML += `
@@ -200,11 +201,11 @@
                 document.getElementById('product-layout').classList.remove('hidden');
 
             } catch (err) {
-                console.error("4. Crash details:", err);
+                // If it hits an error, display it clearly instead of spinning
                 loadingBox.innerHTML = `
                     <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto">
                         <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
-                        <h3 class="text-red-700 font-bold text-xl mb-1">Data Display Error</h3>
+                        <h3 class="text-red-700 font-bold text-xl mb-1">Database Error</h3>
                         <p class="text-sm text-red-600 mb-4">${err.message}</p>
                         <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
                     </div>`;
@@ -245,8 +246,7 @@
             }
         };
 
-        // Fire immediately to bypass browser DOM bugs
-        console.log("0. Script loaded, firing fetch...");
+        // Fire immediately to ensure logic runs
         fetchProductDetails();
     </script>
 </body>
