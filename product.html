@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } } } } }
     </script>
@@ -31,7 +32,7 @@
     <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
         <div class="text-center text-slate-400" id="loading-content">
             <i class="ph ph-spinner animate-spin text-4xl mb-2 mx-auto block"></i>
-            <p class="font-medium mt-2 text-slate-500" id="loading-text">Loading secure product data...</p>
+            <p class="font-medium mt-2 text-slate-500" id="loading-text">Authenticating Product...</p>
         </div>
     </div>
 
@@ -82,139 +83,133 @@
     </main>
 
     <script>
-        // Wrapped in an asynchronous immediately-invoked function expression (IIFE)
-        // This guarantees that ANY error is caught and printed to the screen.
         (async function() {
-            try {
-                const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
-                const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
-                const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+            console.log("Script initializing...");
+            const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
+            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
-                const urlParams = new URLSearchParams(window.location.search);
-                const productId = urlParams.get('id');
-                let currentImageArray = [];
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            let currentImageArray = [];
 
-                // Chrome AI Recommended helper: safely get elements
-                const safeEl = (id) => document.getElementById(id);
-                
-                // Helper to update text safely
-                const safeUpdate = (id, text) => {
-                    const el = safeEl(id);
-                    if (el) el.innerText = text;
-                };
+            // Defensive Helper: Safely updates text only if the element exists
+            const safeUpdate = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            };
 
-                // Helper to force an error on the screen instead of a loading spinner
-                const displayError = (msg) => {
-                    const lc = safeEl('loading-content');
-                    if (lc) {
-                        lc.innerHTML = `
-                            <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto text-center">
-                                <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
-                                <h3 class="text-red-700 font-bold text-xl mb-1">Error Loading Product</h3>
-                                <p class="text-sm text-red-600 mb-4">${msg}</p>
-                                <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
-                            </div>`;
-                    }
-                };
-
-                if(!productId) { 
-                    displayError("No Product ID provided in the link. Please go back to the Store.");
-                    return; 
+            // Error Display Helper
+            const displayError = (msg) => {
+                const loadingBox = document.getElementById('loading-content');
+                if (loadingBox) {
+                    loadingBox.innerHTML = `
+                        <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto text-center">
+                            <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
+                            <h3 class="text-red-700 font-bold text-xl mb-1">System Error</h3>
+                            <p class="text-sm text-red-600 mb-4">${msg}</p>
+                            <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
+                        </div>`;
                 }
+            };
 
+            // Safe YouTube Parser
+            const getYoutubeId = (url) => {
+                if (!url || typeof url !== 'string') return null;
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : null;
+            };
+
+            try {
+                if(!productId) throw new Error("No Product ID provided in the URL.");
+
+                console.log("Fetching product:", productId);
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
                 
-                if (!res.ok) {
-                    throw new Error("Supabase Database connection rejected.");
-                }
+                if (!res.ok) throw new Error("Database connection rejected.");
                 
                 const data = await res.json();
-                
-                if (!data || data.length === 0) {
-                    displayError("Product not found or has been deleted from the database.");
-                    return;
-                }
+                if (!data || data.length === 0) throw new Error("Product not found or deleted.");
 
                 const p = data[0];
-                document.title = `${p.name || 'Product'} | Softode`;
+                console.log("Data loaded securely.", p);
 
-                // Safe UI Updates
+                // 1. Safely populate text
+                document.title = `${p.name || 'Product'} | Softode`;
                 safeUpdate('prod-category', p.category || 'Template');
                 safeUpdate('prod-title', p.name || 'Unnamed Product');
                 safeUpdate('prod-short-desc', p.description || '');
                 safeUpdate('prod-price', `$${p.price || '0'}`);
-                safeUpdate('prod-full-desc', p.full_description || 'No detailed overview provided for this product.');
+                safeUpdate('prod-full-desc', p.full_description || 'No detailed overview provided.');
 
-                const checkoutBtn = safeEl('checkout-btn');
-                if (checkoutBtn) {
-                    checkoutBtn.onclick = () => window.location.href = `checkout.html?id=${p.id}`;
-                }
+                // 2. Safely attach Checkout event
+                const checkoutBtn = document.getElementById('checkout-btn');
+                if (checkoutBtn) checkoutBtn.onclick = () => window.location.href = `checkout.html?id=${p.id}`;
 
-                // Demo link routing safely
-                const demoContainer = safeEl('demo-container');
-                const demoLinkBtn = safeEl('demo-link-btn');
+                // 3. Safely attach Demo links (with crash-prevention)
                 if (p.supplier && p.supplier.trim() !== '') {
+                    const demoContainer = document.getElementById('demo-container');
                     if (demoContainer) demoContainer.classList.remove('hidden');
-                    if (demoLinkBtn) demoLinkBtn.href = p.supplier.split(',')[0].trim();
+                    
+                    const demoLink = p.supplier.split(',')[0].trim();
+                    
+                    const mainDemoBtn = document.getElementById('demo-link-btn');
+                    if (mainDemoBtn) mainDemoBtn.href = demoLink;
+
+                    // Fallbacks to prevent crash if old cached HTML is somehow loaded
+                    const oldFrontend = document.getElementById('demo-frontend-link');
+                    if (oldFrontend) oldFrontend.href = demoLink;
+                    const oldAdmin = document.getElementById('demo-admin-link');
+                    if (oldAdmin) oldAdmin.href = '#'; 
                 }
 
-                // Image gallery compilation with multiple format safety nets
+                // 4. Safely parse Image Gallery
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
 
                 if (p.image_gallery) {
                     try {
-                        let parsed = p.image_gallery;
-                        // If it's a string, attempt to parse JSON or split by comma
-                        if (typeof parsed === 'string') {
-                            if (parsed.startsWith('[')) {
-                                parsed = JSON.parse(parsed); // Parse JSONB format
+                        if (typeof p.image_gallery === 'string') {
+                            if (p.image_gallery.trim().startsWith('[')) {
+                                const parsed = JSON.parse(p.image_gallery);
+                                if(Array.isArray(parsed)) currentImageArray = currentImageArray.concat(parsed);
                             } else {
-                                parsed = parsed.split(',').map(s => s.trim()).filter(Boolean); // Parse comma string
+                                const split = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
+                                currentImageArray = currentImageArray.concat(split);
                             }
+                        } else if (Array.isArray(p.image_gallery)) {
+                            currentImageArray = currentImageArray.concat(p.image_gallery);
                         }
-                        if (Array.isArray(parsed)) {
-                            currentImageArray = currentImageArray.concat(parsed);
-                        }
-                    } catch(e) {
-                        console.warn("Could not parse image gallery array safely", e);
-                    }
+                    } catch(e) { console.warn("Gallery parse warning, safely ignored."); }
                 }
 
-                const getYoutubeId = (url) => {
-                    if (typeof url !== 'string') return null;
-                    const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                    return (match && match[2].length === 11) ? match[2] : null;
-                };
-
-                const thumbContainer = safeEl('thumbnail-container');
+                const thumbContainer = document.getElementById('thumbnail-container');
                 if (thumbContainer && currentImageArray.length > 1) {
-                    let htmlString = '';
+                    thumbContainer.innerHTML = '';
                     currentImageArray.forEach((url, i) => {
                         const ytId = getYoutubeId(url);
                         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
                         const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
                         const thumbState = i === 0 ? 'active-thumb' : 'inactive-thumb';
                         
-                        htmlString += `
+                        thumbContainer.innerHTML += `
                             <button onclick="window.changeMainImage(${i})" id="thumb-${i}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
                                 <img src="${thumbUrl}" class="w-full h-full object-cover pointer-events-none">
                                 ${playIcon}
                             </button>
                         `;
                     });
-                    thumbContainer.innerHTML = htmlString;
                 }
 
                 window.changeMainImage = function(index) {
-                    const mainContainer = safeEl('main-image-container');
+                    const mainContainer = document.getElementById('main-image-container');
                     if (!mainContainer) return;
                     
                     const url = currentImageArray[index];
                     const ytId = getYoutubeId(url);
                     
                     mainContainer.style.opacity = 0;
-                    
                     setTimeout(() => {
                         if(ytId) {
                             mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0 rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
@@ -224,40 +219,28 @@
                         mainContainer.style.opacity = 1;
                     }, 150);
 
-                    // Safely update active thumb styles
+                    // Update active thumb classes safely
                     currentImageArray.forEach((_, i) => {
-                        const thumbEl = safeEl(`thumb-${i}`);
+                        const thumbEl = document.getElementById(`thumb-${i}`);
                         if(thumbEl) {
-                            // Overwrite classes directly to prevent classList bugs
                             thumbEl.className = `relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${i === index ? 'active-thumb' : 'inactive-thumb'}`;
                         }
                     });
                 };
 
-                // Initialize the main image
                 window.changeMainImage(0);
 
-                // Reveal Page Safely
-                const ls = safeEl('loading-state');
-                const pl = safeEl('product-layout');
-                if (ls) ls.classList.add('hidden');
-                if (pl) pl.classList.remove('hidden');
+                // 5. Reveal Page (This only happens if NO errors occurred)
+                const loadingState = document.getElementById('loading-state');
+                const productLayout = document.getElementById('product-layout');
+                if (loadingState) loadingState.classList.add('hidden');
+                if (productLayout) productLayout.classList.remove('hidden');
 
             } catch (globalError) {
-                // If ANYTHING crashes, it falls here and prints exactly why to the screen.
                 console.error("Critical Execution Error: ", globalError);
-                const lc = document.getElementById('loading-content');
-                if (lc) {
-                    lc.innerHTML = `
-                        <div class="bg-red-50 p-6 rounded-xl border border-red-200 max-w-md mx-auto text-center">
-                            <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
-                            <h3 class="text-red-700 font-bold text-lg mb-1">Unexpected Error</h3>
-                            <p class="text-sm text-red-600 mb-4">${globalError.message}</p>
-                            <a href="index.html" class="text-red-700 underline font-bold text-sm">Return Home</a>
-                        </div>`;
-                }
+                displayError(globalError.message);
             }
-        })(); // The function executes itself instantly
+        })(); 
     </script>
 </body>
 </html>
