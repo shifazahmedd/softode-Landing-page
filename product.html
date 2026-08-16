@@ -8,265 +8,269 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], },
+                    colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } }
+                }
+            }
+        }
     </script>
     <style>
         .active-thumb { border: 2px solid #2563eb; opacity: 1; }
         .inactive-thumb { border: 2px solid transparent; opacity: 0.6; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .inactive-thumb:hover { opacity: 1; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen">
 
-    <!-- Navigation -->
+    <!-- Simple Navigation -->
     <nav class="bg-white border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <a href="index.html" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
-                <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>Soft<span class="text-primary-600">ode</span>
+                <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>
+                Soft<span class="text-primary-600">ode</span>
             </a>
-            <a href="index.html" class="text-sm font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1"><i class="ph-bold ph-arrow-left"></i> Back to Store</a>
+            <a href="index.html" class="text-sm font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1">
+                <i class="ph-bold ph-arrow-left"></i> Back to Store
+            </a>
         </div>
     </nav>
 
-    <!-- Loading State -->
+    <!-- Main Content Loader -->
     <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
-        <div class="text-center text-slate-400">
-            <i class="ph ph-spinner animate-spin text-4xl mb-2 mx-auto block"></i>
-            <p>Authenticating Product...</p>
-        </div>
+        <div class="text-center text-slate-400"><i class="ph ph-spinner animate-spin text-4xl mb-2"></i><p>Loading product...</p></div>
     </div>
 
-    <!-- Error State -->
-    <div id="error-state" class="hidden flex-grow flex items-center justify-center py-32 px-6">
-        <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md w-full text-center">
-            <i class="ph-fill ph-warning-circle text-red-500 text-5xl mb-3"></i>
-            <h3 class="text-red-700 font-bold text-xl mb-2">Oops! Something went wrong.</h3>
-            <p id="error-message" class="text-sm text-red-600 mb-6">Could not load product details.</p>
-            <a href="index.html" class="inline-block bg-white border border-red-200 px-6 py-2.5 rounded-xl text-red-700 font-bold text-sm hover:bg-red-50 transition-colors">Return to Store</a>
-        </div>
-    </div>
-
-    <!-- Main Product Layout -->
+    <!-- Product Layout (Hidden until loaded) -->
     <main id="product-layout" class="hidden flex-grow max-w-7xl mx-auto px-6 py-12 w-full">
+        
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             
-            <!-- LEFT: Image/Video Slider -->
+            <!-- LEFT: Image Slider -->
             <div class="w-full space-y-4 sticky top-6">
-                <div id="main-image-container" class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm transition-opacity duration-300 relative">
-                    <img id="main-image" src="" class="w-full h-full object-cover absolute inset-0">
+                <!-- Main Big Image -->
+                <div class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
+                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover transition-opacity duration-300">
                 </div>
+                <!-- Thumbnails row -->
                 <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-                    <!-- Thumbnails dynamically injected here -->
+                    <!-- Javascript will inject thumbnails here -->
                 </div>
             </div>
 
             <!-- RIGHT: Product Details -->
             <div class="flex flex-col">
-                <span id="prod-category" class="text-xs font-black uppercase tracking-wider text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg inline-block self-start mb-4">Category</span>
-                <h1 id="prod-title" class="font-heading text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">Product Title</h1>
-                <p id="prod-short-desc" class="text-lg text-slate-500 mb-8 leading-relaxed">Short description goes here.</p>
+                <span id="prod-category" class="text-xs font-black uppercase tracking-wider text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg inline-block self-start mb-4">
+                    Category
+                </span>
+                
+                <h1 id="prod-title" class="font-heading text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">
+                    Product Title
+                </h1>
+                
+                <p id="prod-short-desc" class="text-lg text-slate-500 mb-8 leading-relaxed">
+                    Short description goes here.
+                </p>
 
                 <div class="p-6 bg-white rounded-3xl border border-slate-200 shadow-sm mb-10">
                     <div class="flex items-end gap-2 mb-2">
                         <span id="prod-price" class="text-5xl font-black text-slate-900">$0</span>
                         <span class="text-slate-500 font-medium mb-1">/ one-time payment</span>
                     </div>
-                    <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6"><i class="ph-fill ph-check-circle"></i> Instant Access</p>
+                    <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6"><i class="ph-fill ph-check-circle"></i> Managed Hosting Included</p>
                     
-                    <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2 mb-3">
+                    <!-- THIS BUTTON ROUTES TO CHECKOUT -->
+                    <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2">
                         Proceed to Checkout <i class="ph-bold ph-lock-key"></i>
                     </button>
                     
-                    <div id="demo-container" class="hidden">
-                        <a id="demo-link-btn" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
-                            View Live Demo <i class="ph-bold ph-arrow-square-out"></i>
-                        </a>
+                    <!-- Live Demo Link Modal Trigger -->
+                    <div id="demo-container" class="mt-4 hidden">
+                        <button onclick="openDemoModal()" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                            View Live Demos <i class="ph-bold ph-monitor-play"></i>
+                        </button>
                     </div>
                 </div>
 
+                <!-- Full Description / Features -->
                 <div>
                     <h3 class="font-heading text-2xl font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2">Product Overview</h3>
-                    <div id="prod-full-desc" class="prose prose-slate max-w-none text-slate-600 leading-loose whitespace-pre-line"></div>
+                    <div id="prod-full-desc" class="prose prose-slate max-w-none text-slate-600 leading-loose whitespace-pre-line">
+                        Detailed description will appear here.
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-8 text-center text-slate-500 text-sm mt-auto">
-        &copy; 2026 Softode. All rights reserved.
+    <footer class="bg-white border-t border-slate-200 mt-20 pt-8 pb-8">
+        <div class="max-w-7xl mx-auto px-6 text-center"><p class="text-sm text-slate-400 font-medium">© 2026 Softode. All rights reserved.</p></div>
     </footer>
+
+    <!-- ==========================================
+         DEMO CHOICE MODAL
+         ========================================== -->
+    <div id="demo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDemoModal()"></div>
+        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl relative z-10 mx-4 overflow-hidden transform transition-all">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-heading font-bold text-xl text-slate-900">Choose Demo Experience</h3>
+                <button onclick="closeDemoModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-500 hover:bg-slate-200 transition-colors">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+            <div class="p-6 md:p-8 space-y-4">
+                <a id="demo-frontend-link" href="#" target="_blank" class="block border border-slate-200 hover:border-primary-500 hover:shadow-md transition-all rounded-2xl p-6 group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center shrink-0 group-hover:bg-primary-500 group-hover:text-white transition-colors">
+                            <i class="ph-fill ph-storefront text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-lg">Customer View</h4>
+                            <p class="text-sm text-slate-500">Explore the live website exactly as your customers will see it.</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a id="demo-admin-link" href="#" target="_blank" class="block border border-slate-200 hover:border-accent-500 hover:shadow-md transition-all rounded-2xl p-6 group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-accent-50 text-accent-600 flex items-center justify-center shrink-0 group-hover:bg-accent-500 group-hover:text-white transition-colors">
+                            <i class="ph-fill ph-lock-key text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-lg">Admin Panel View</h4>
+                            <p class="text-sm text-slate-500">Look behind the scenes. See how easy it is to manage your store.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
 
     <script>
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
         const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
-        // 1. Get the ID from the URL
+        // Get the Product ID from the URL (e.g., product.html?id=123)
         const urlParams = new URLSearchParams(window.location.search);
-        let productId = urlParams.get('id');
-
-        // FALLBACK: If opened locally (from Downloads) without an ID, use this ID for testing
-        if (!productId) {
-            console.warn("No ID found in URL. Using Demo ID.");
-            productId = '1786817016279'; 
-        }
+        const productId = urlParams.get('id');
 
         let currentImageArray = [];
 
-        // DEFENSIVE HELPER: Safely update text
-        function safeSetText(id, text) {
-            const el = document.getElementById(id);
-            if (el) el.innerText = text;
-        }
+        async function fetchProductDetails() {
+            if(!productId) { window.location.href = 'index.html'; return; } // Redirect if no ID
 
-        // DEFENSIVE HELPER: Youtube links
-        function getYoutubeId(url) {
-            if (!url || typeof url !== 'string') return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
-        // Display errors gracefully
-        function showError(message) {
-            const loadingState = document.getElementById('loading-state');
-            const errorState = document.getElementById('error-state');
-            const productLayout = document.getElementById('product-layout');
-            
-            if (loadingState) loadingState.classList.add('hidden');
-            if (productLayout) productLayout.classList.add('hidden');
-            
-            if (errorState) {
-                errorState.classList.remove('hidden');
-                const msgEl = document.getElementById('error-message');
-                if (msgEl) msgEl.innerText = message;
-            }
-        }
-
-        async function loadProduct() {
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
-                
-                if (!res.ok) throw new Error("Failed to connect to the database.");
-                
                 const data = await res.json();
-                if (!data || data.length === 0) throw new Error("Product not found or has been removed.");
+                
+                if(!data || data.length === 0) { throw new Error("Product not found"); }
                 
                 const p = data[0];
-                
-                // Safely load all text elements
-                document.title = `${p.name || 'Product'} | Softode`;
-                safeSetText('prod-category', p.category || 'Digital Product');
-                safeSetText('prod-title', p.name || 'Unnamed Product');
-                safeSetText('prod-short-desc', p.description || '');
-                safeSetText('prod-price', `$${p.price || '0'}`);
-                safeSetText('prod-full-desc', p.full_description || 'No detailed overview provided.');
-
-                // Safely handle Checkout button
-                const checkoutBtn = document.getElementById('checkout-btn');
-                if (checkoutBtn) {
-                    checkoutBtn.onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
-                }
-
-                // Safely handle Demo Button
-                if (p.supplier && p.supplier.trim() !== '') { 
-                    const demoContainer = document.getElementById('demo-container');
-                    const demoLinkBtn = document.getElementById('demo-link-btn');
-                    if (demoContainer && demoLinkBtn) {
-                        demoContainer.classList.remove('hidden');
-                        demoLinkBtn.href = p.supplier.split(',')[0].trim();
-                    }
-                }
-
-                // Handle Image/Video Gallery
-                const mainImg = p.image || 'https://placehold.co/800x600';
-                currentImageArray = [mainImg];
-                
-                if (p.image_gallery) {
-                    if (typeof p.image_gallery === 'string') {
-                        const extraImages = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
-                        currentImageArray = currentImageArray.concat(extraImages);
-                    } else if (Array.isArray(p.image_gallery)) {
-                        currentImageArray = currentImageArray.concat(p.image_gallery);
-                    }
-                }
-
-                const thumbContainer = document.getElementById('thumbnail-container');
-                if (thumbContainer) {
-                    thumbContainer.innerHTML = '';
-                    if (currentImageArray.length > 1) {
-                        currentImageArray.forEach((url, index) => {
-                            const ytId = getYoutubeId(url);
-                            const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
-                            const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
-                            const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
-                            
-                            thumbContainer.innerHTML += `
-                                <button onclick="window.changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
-                                    <img src="${thumbUrl}" class="w-full h-full object-cover pointer-events-none">
-                                    ${playIcon}
-                                </button>
-                            `;
-                        });
-                    }
-                }
-
-                // Initialize the gallery view
-                if (window.changeMainImage) window.changeMainImage(0);
-
-                // Reveal Page safely
-                const loadingState = document.getElementById('loading-state');
-                const productLayout = document.getElementById('product-layout');
-                if (loadingState) loadingState.classList.add('hidden');
-                if (productLayout) productLayout.classList.remove('hidden');
-
-            } catch (error) {
-                console.error("Product Page Error:", error);
-                showError(error.message);
+                renderProduct(p);
+            } catch (err) {
+                document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500"><p class="font-bold text-xl mb-2">Oops!</p><p>Product not found or database error.</p><a href="index.html" class="text-blue-500 underline mt-4 inline-block">Return Home</a></div>`;
             }
         }
 
-        // Make function globally accessible for inline onclick handlers
-        window.changeMainImage = function(index) {
-            try {
-                const mainContainer = document.getElementById('main-image-container');
-                if (!mainContainer || !currentImageArray[index]) return;
-
-                const url = currentImageArray[index];
-                const ytId = getYoutubeId(url);
+        function renderProduct(p) {
+            // 1. Populate Text Data
+            document.title = `${p.name} | Softode`;
+            document.getElementById('prod-category').innerText = p.category || 'Template';
+            document.getElementById('prod-title').innerText = p.name;
+            document.getElementById('prod-short-desc').innerText = p.description || '';
+            document.getElementById('prod-price').innerText = `$${p.price}`;
+            document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
+            
+            // Demo Button Logic (Splitting the URLs by comma)
+            if(p.supplier) { 
+                document.getElementById('demo-container').classList.remove('hidden');
                 
-                mainContainer.style.opacity = 0;
+                const urls = p.supplier.split(',');
+                const frontendUrl = urls[0] ? urls[0].trim() : '#';
+                // If they didn't provide a second URL, use a default demo admin panel or hide it
+                const adminUrl = urls[1] ? urls[1].trim() : '#';
                 
-                setTimeout(() => {
-                    if(ytId) {
-                        mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0 rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-                    } else {
-                        mainContainer.innerHTML = `<img src="${url}" class="w-full h-full object-cover absolute inset-0 rounded-3xl">`;
-                    }
-                    mainContainer.style.opacity = 1;
-                }, 150);
-
-                currentImageArray.forEach((_, i) => {
-                    const thumbEl = document.getElementById(`thumb-${i}`);
-                    if(thumbEl) {
-                        if(i === index) {
-                            thumbEl.classList.remove('inactive-thumb');
-                            thumbEl.classList.add('active-thumb');
-                        } else {
-                            thumbEl.classList.remove('active-thumb');
-                            thumbEl.classList.add('inactive-thumb');
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error("Gallery Error:", e);
+                document.getElementById('demo-frontend-link').href = frontendUrl;
+                document.getElementById('demo-admin-link').href = adminUrl;
             }
-        };
 
-        // Fire the load function
-        loadProduct();
+            // Checkout Button Setup (Pass the ID to the checkout page)
+            document.getElementById('checkout-btn').onclick = () => {
+                window.location.href = `checkout.html?id=${p.id}`;
+            };
+
+            // 2. Setup Image Gallery
+            const mainImg = p.image || 'https://placehold.co/800x600';
+            currentImageArray = [mainImg];
+            
+            // If they uploaded gallery images in Admin panel, add them to the array
+            if(p.image_gallery && Array.isArray(p.image_gallery)) {
+                currentImageArray = currentImageArray.concat(p.image_gallery);
+            }
+
+            // Set main image
+            document.getElementById('main-image').src = currentImageArray[0];
+
+            // Build Thumbnails
+            const thumbContainer = document.getElementById('thumbnail-container');
+            thumbContainer.innerHTML = '';
+            
+            if(currentImageArray.length > 1) {
+                currentImageArray.forEach((imgUrl, index) => {
+                    const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
+                    thumbContainer.innerHTML += `
+                        <button onclick="changeMainImage(${index})" id="thumb-${index}" class="w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                            <img src="${imgUrl}" class="w-full h-full object-cover pointer-events-none">
+                        </button>
+                    `;
+                });
+            }
+
+            // Reveal Page
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('product-layout').classList.remove('hidden');
+        }
+
+        // Javascript to swap the large image when a small one is clicked
+        function changeMainImage(index) {
+            const mainImgEl = document.getElementById('main-image');
+            
+            // Simple fade effect
+            mainImgEl.style.opacity = 0;
+            setTimeout(() => {
+                mainImgEl.src = currentImageArray[index];
+                mainImgEl.style.opacity = 1;
+            }, 150);
+
+            // Update thumbnail borders
+            currentImageArray.forEach((_, i) => {
+                const thumbEl = document.getElementById(`thumb-${i}`);
+                if(thumbEl) {
+                    if(i === index) {
+                        thumbEl.classList.remove('inactive-thumb');
+                        thumbEl.classList.add('active-thumb');
+                    } else {
+                        thumbEl.classList.remove('active-thumb');
+                        thumbEl.classList.add('inactive-thumb');
+                    }
+                }
+            });
+        }
+
+        // Modal Controls
+        function openDemoModal() {
+            document.getElementById('demo-modal').classList.remove('hidden');
+        }
+        function closeDemoModal() {
+            document.getElementById('demo-modal').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchProductDetails);
     </script>
 </body>
 </html>
