@@ -62,13 +62,13 @@
                     </div>
                     <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6"><i class="ph-fill ph-check-circle"></i> Managed Hosting Included</p>
                     
-                    <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2">
+                    <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2 mb-3">
                         Proceed to Checkout <i class="ph-bold ph-lock-key"></i>
                     </button>
                     
-                    <div id="demo-container" class="mt-4 hidden">
-                        <!-- DIRECT DEMO LINK (No confusing popups!) -->
-                        <a id="demo-btn" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                    <div id="demo-container" class="hidden">
+                        <!-- Direct Link to Live Demo -->
+                        <a id="demo-link-btn" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
                             View Live Demo <i class="ph-bold ph-arrow-square-out"></i>
                         </a>
                     </div>
@@ -83,6 +83,7 @@
     </main>
 
     <script>
+        console.log("1. Product Script Init");
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
         const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
@@ -93,9 +94,16 @@
 
         // Global Error Catcher to prevent eternal loading spinners
         window.addEventListener('error', function(event) {
+            console.error("Global Catch:", event.error);
             const loadingBox = document.getElementById('loading-content');
             if (loadingBox) {
-                loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Display Error Caught</p><p class="text-sm text-slate-500">${event.message}</p><br><a href="index.html" class="text-blue-500 underline font-medium">Return to Home</a>`;
+                loadingBox.innerHTML = `
+                    <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto">
+                        <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
+                        <h3 class="text-red-700 font-bold text-xl mb-1">System Error</h3>
+                        <p class="text-sm text-red-600 mb-4">${event.message}</p>
+                        <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
+                    </div>`;
             }
         });
 
@@ -108,22 +116,27 @@
         }
 
         async function fetchProductDetails() {
+            console.log("2. Fetching ID:", productId);
             const loadingBox = document.getElementById('loading-content');
             
             if(!productId) { 
-                loadingBox.innerHTML = '<p class="text-red-500 font-bold text-xl">No Product ID provided.</p><br><a href="index.html" class="text-blue-500 underline">Go Back</a>'; 
+                loadingBox.innerHTML = '<p class="text-red-500 font-bold text-xl">No Product ID provided.</p><br><a href="index.html" class="text-blue-500 underline font-medium">Go Back</a>'; 
                 return; 
             } 
 
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
                 
-                if (!res.ok) throw new Error("Supabase API rejected the request. Does the ID exist?");
+                if (!res.ok) {
+                    const errTxt = await res.text();
+                    throw new Error("Database returned an error: " + errTxt);
+                }
                 
                 const data = await res.json();
+                console.log("3. Data received:", data);
                 
                 if (!data || data.length === 0) {
-                    loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Product not found.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Go Back</a>`;
+                    loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Product not found.</p><br><a href="index.html" class="text-blue-500 underline mt-2 block">Return to Store</a>`;
                     return; 
                 }
                 
@@ -139,18 +152,25 @@
                 
                 document.getElementById('checkout-btn').onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
 
-                // Direct link setup for Live Demo
+                // Setup Direct Live Demo Link
                 if(p.supplier && p.supplier.trim() !== '') { 
                     document.getElementById('demo-container').classList.remove('hidden');
-                    document.getElementById('demo-btn').href = p.supplier.split(',')[0].trim(); // Takes first link if multiple
+                    // We grab the first link if multiple exist
+                    document.getElementById('demo-link-btn').href = p.supplier.split(',')[0].trim();
                 }
 
                 // Setup Image / Video Gallery Safely
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
                 
-                if(p.image_gallery && typeof p.image_gallery === 'string') {
-                    const extraImages = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
+                // Safe parsing of image_gallery in case it's stored weirdly in DB
+                if(p.image_gallery) {
+                    let extraImages = [];
+                    if(typeof p.image_gallery === 'string') {
+                        extraImages = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
+                    } else if (Array.isArray(p.image_gallery)) {
+                        extraImages = p.image_gallery;
+                    }
                     currentImageArray = currentImageArray.concat(extraImages);
                 }
 
@@ -161,7 +181,7 @@
                     currentImageArray.forEach((url, index) => {
                         const ytId = getYoutubeId(url);
                         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
-                        const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-3xl"></i></div>` : '';
+                        const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
                         const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
                         
                         thumbContainer.innerHTML += `
@@ -180,8 +200,14 @@
                 document.getElementById('product-layout').classList.remove('hidden');
 
             } catch (err) {
-                console.error("Crash details:", err);
-                loadingBox.innerHTML = `<p class="text-red-500 font-bold text-xl">Data Error:</p><p class="text-sm text-slate-500">${err.message}</p><br><a href="index.html" class="text-blue-500 underline">Return Home</a>`;
+                console.error("4. Crash details:", err);
+                loadingBox.innerHTML = `
+                    <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto">
+                        <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
+                        <h3 class="text-red-700 font-bold text-xl mb-1">Data Display Error</h3>
+                        <p class="text-sm text-red-600 mb-4">${err.message}</p>
+                        <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
+                    </div>`;
             }
         }
 
@@ -219,7 +245,8 @@
             }
         };
 
-        // Guarantee execution directly immediately
+        // Fire immediately to bypass browser DOM bugs
+        console.log("0. Script loaded, firing fetch...");
         fetchProductDetails();
     </script>
 </body>
