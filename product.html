@@ -28,12 +28,10 @@
         </div>
     </nav>
 
-    <!-- Essential Loading Box that we control with JS -->
     <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
         <div class="text-center text-slate-400" id="loading-content">
             <i class="ph ph-spinner animate-spin text-4xl mb-2 mx-auto block"></i>
-            <!-- CACHE BUSTER TEXT: If you don't see this exact text on your live site, your browser is caching the old file! -->
-            <p class="font-medium mt-2 text-slate-500">Connecting to Secure Server...</p>
+            <p class="font-medium mt-2 text-slate-500" id="loading-text">Loading secure product data...</p>
         </div>
     </div>
 
@@ -42,7 +40,7 @@
             
             <!-- LEFT: Image Slider -->
             <div class="w-full space-y-4 sticky top-6">
-                <div id="main-image-container" class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm transition-opacity duration-300 relative">
+                <div id="main-image-container" class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm transition-opacity duration-300 relative flex items-center justify-center">
                     <img id="main-image" src="" class="w-full h-full object-cover absolute inset-0">
                 </div>
                 <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
@@ -84,181 +82,182 @@
     </main>
 
     <script>
-        const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
-        const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
-        let currentImageArray = [];
-
-        // Unbreakable Global Error Catcher
-        window.onerror = function(msg, url, line) {
-            const loadingBox = document.getElementById('loading-content');
-            if (loadingBox) {
-                loadingBox.innerHTML = `
-                    <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto">
-                        <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
-                        <h3 class="text-red-700 font-bold text-xl mb-1">Critical Script Error</h3>
-                        <p class="text-sm text-red-600 mb-4">${msg}</p>
-                        <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
-                    </div>`;
-            }
-            return false;
-        };
-
-        // Safely detects if a URL is a YouTube link
-        function getYoutubeId(url) {
-            if (!url || typeof url !== 'string') return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
-        async function fetchProductDetails() {
-            const loadingBox = document.getElementById('loading-content');
-            
-            if(!productId) { 
-                loadingBox.innerHTML = '<p class="text-red-500 font-bold text-xl">No Product ID provided.</p><br><a href="index.html" class="text-blue-500 underline font-medium">Go Back to Store</a>'; 
-                return; 
-            } 
-
+        // Wrapped in an asynchronous immediately-invoked function expression (IIFE)
+        // This guarantees that ANY error is caught and printed to the screen.
+        (async function() {
             try {
-                // Fetch with explicit timeout protection
+                const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
+                const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
+                const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = urlParams.get('id');
+                let currentImageArray = [];
+
+                // Chrome AI Recommended helper: safely get elements
+                const safeEl = (id) => document.getElementById(id);
+                
+                // Helper to update text safely
+                const safeUpdate = (id, text) => {
+                    const el = safeEl(id);
+                    if (el) el.innerText = text;
+                };
+
+                // Helper to force an error on the screen instead of a loading spinner
+                const displayError = (msg) => {
+                    const lc = safeEl('loading-content');
+                    if (lc) {
+                        lc.innerHTML = `
+                            <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto text-center">
+                                <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
+                                <h3 class="text-red-700 font-bold text-xl mb-1">Error Loading Product</h3>
+                                <p class="text-sm text-red-600 mb-4">${msg}</p>
+                                <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
+                            </div>`;
+                    }
+                };
+
+                if(!productId) { 
+                    displayError("No Product ID provided in the link. Please go back to the Store.");
+                    return; 
+                }
+
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
                 
                 if (!res.ok) {
-                    const errTxt = await res.text();
-                    throw new Error(errTxt || "The database rejected the connection.");
+                    throw new Error("Supabase Database connection rejected.");
                 }
                 
                 const data = await res.json();
                 
                 if (!data || data.length === 0) {
-                    loadingBox.innerHTML = `
-                        <i class="ph-fill ph-magnifying-glass text-slate-300 text-5xl mb-3 block"></i>
-                        <p class="text-slate-600 font-bold text-xl">Product not found.</p>
-                        <p class="text-slate-400 text-sm mt-1">This product may have been deleted.</p>
-                        <a href="index.html" class="text-primary-600 hover:text-primary-700 font-bold mt-4 block">Return to Store</a>`;
-                    return; 
+                    displayError("Product not found or has been deleted from the database.");
+                    return;
                 }
-                
-                const p = data[0];
-                
-                // Safely update all text elements using Chrome AI's recommended safety checks
-                document.title = `${p.name || 'Product'} | Softode`;
-                
-                const safeUpdate = (id, text) => {
-                    const el = document.getElementById(id);
-                    if (el) el.innerText = text;
-                };
 
+                const p = data[0];
+                document.title = `${p.name || 'Product'} | Softode`;
+
+                // Safe UI Updates
                 safeUpdate('prod-category', p.category || 'Template');
                 safeUpdate('prod-title', p.name || 'Unnamed Product');
                 safeUpdate('prod-short-desc', p.description || '');
                 safeUpdate('prod-price', `$${p.price || '0'}`);
                 safeUpdate('prod-full-desc', p.full_description || 'No detailed overview provided for this product.');
-                
-                const checkoutBtn = document.getElementById('checkout-btn');
-                if (checkoutBtn) checkoutBtn.onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
 
-                // Setup Direct Live Demo Link Safely
-                if(p.supplier && p.supplier.trim() !== '') { 
-                    const demoContainer = document.getElementById('demo-container');
-                    const demoLink = document.getElementById('demo-link-btn');
-                    if (demoContainer && demoLink) {
-                        demoContainer.classList.remove('hidden');
-                        demoLink.href = p.supplier.split(',')[0].trim();
-                    }
+                const checkoutBtn = safeEl('checkout-btn');
+                if (checkoutBtn) {
+                    checkoutBtn.onclick = () => window.location.href = `checkout.html?id=${p.id}`;
                 }
 
-                // Setup Image / Video Gallery Safely
+                // Demo link routing safely
+                const demoContainer = safeEl('demo-container');
+                const demoLinkBtn = safeEl('demo-link-btn');
+                if (p.supplier && p.supplier.trim() !== '') {
+                    if (demoContainer) demoContainer.classList.remove('hidden');
+                    if (demoLinkBtn) demoLinkBtn.href = p.supplier.split(',')[0].trim();
+                }
+
+                // Image gallery compilation with multiple format safety nets
                 const mainImg = p.image || 'https://placehold.co/800x600';
                 currentImageArray = [mainImg];
-                
-                if(p.image_gallery) {
-                    let extraImages = [];
-                    if(typeof p.image_gallery === 'string') {
-                        extraImages = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
-                    } else if (Array.isArray(p.image_gallery)) {
-                        extraImages = p.image_gallery;
+
+                if (p.image_gallery) {
+                    try {
+                        let parsed = p.image_gallery;
+                        // If it's a string, attempt to parse JSON or split by comma
+                        if (typeof parsed === 'string') {
+                            if (parsed.startsWith('[')) {
+                                parsed = JSON.parse(parsed); // Parse JSONB format
+                            } else {
+                                parsed = parsed.split(',').map(s => s.trim()).filter(Boolean); // Parse comma string
+                            }
+                        }
+                        if (Array.isArray(parsed)) {
+                            currentImageArray = currentImageArray.concat(parsed);
+                        }
+                    } catch(e) {
+                        console.warn("Could not parse image gallery array safely", e);
                     }
-                    currentImageArray = currentImageArray.concat(extraImages);
                 }
 
-                const thumbContainer = document.getElementById('thumbnail-container');
-                thumbContainer.innerHTML = '';
-                
-                if(currentImageArray.length > 1) {
-                    currentImageArray.forEach((url, index) => {
+                const getYoutubeId = (url) => {
+                    if (typeof url !== 'string') return null;
+                    const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                    return (match && match[2].length === 11) ? match[2] : null;
+                };
+
+                const thumbContainer = safeEl('thumbnail-container');
+                if (thumbContainer && currentImageArray.length > 1) {
+                    let htmlString = '';
+                    currentImageArray.forEach((url, i) => {
                         const ytId = getYoutubeId(url);
                         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
                         const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
-                        const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
+                        const thumbState = i === 0 ? 'active-thumb' : 'inactive-thumb';
                         
-                        thumbContainer.innerHTML += `
-                            <button onclick="changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                        htmlString += `
+                            <button onclick="window.changeMainImage(${i})" id="thumb-${i}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
                                 <img src="${thumbUrl}" class="w-full h-full object-cover pointer-events-none">
                                 ${playIcon}
                             </button>
                         `;
                     });
+                    thumbContainer.innerHTML = htmlString;
                 }
 
-                changeMainImage(0);
-
-                // Reveal Page!
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('product-layout').classList.remove('hidden');
-
-            } catch (err) {
-                // If it hits an error, display it clearly instead of spinning
-                loadingBox.innerHTML = `
-                    <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto">
-                        <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
-                        <h3 class="text-red-700 font-bold text-xl mb-1">Database Error</h3>
-                        <p class="text-sm text-red-600 mb-4">${err.message}</p>
-                        <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
-                    </div>`;
-            }
-        }
-
-        window.changeMainImage = function(index) {
-            try {
-                const mainContainer = document.getElementById('main-image-container');
-                const url = currentImageArray[index];
-                const ytId = getYoutubeId(url);
-                
-                mainContainer.style.opacity = 0;
-                
-                setTimeout(() => {
-                    if(ytId) {
-                        mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0 rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-                    } else {
-                        mainContainer.innerHTML = `<img src="${url}" class="w-full h-full object-cover absolute inset-0 rounded-3xl">`;
-                    }
-                    mainContainer.style.opacity = 1;
-                }, 150);
-
-                currentImageArray.forEach((_, i) => {
-                    const thumbEl = document.getElementById(`thumb-${i}`);
-                    if(thumbEl) {
-                        if(i === index) {
-                            thumbEl.classList.remove('inactive-thumb');
-                            thumbEl.classList.add('active-thumb');
+                window.changeMainImage = function(index) {
+                    const mainContainer = safeEl('main-image-container');
+                    if (!mainContainer) return;
+                    
+                    const url = currentImageArray[index];
+                    const ytId = getYoutubeId(url);
+                    
+                    mainContainer.style.opacity = 0;
+                    
+                    setTimeout(() => {
+                        if(ytId) {
+                            mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0 rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
                         } else {
-                            thumbEl.classList.remove('active-thumb');
-                            thumbEl.classList.add('inactive-thumb');
+                            mainContainer.innerHTML = `<img src="${url}" class="w-full h-full object-cover absolute inset-0 rounded-3xl">`;
                         }
-                    }
-                });
-            } catch (e) {
-                console.error("Slider error:", e);
-            }
-        };
+                        mainContainer.style.opacity = 1;
+                    }, 150);
 
-        // Fire immediately to ensure logic runs
-        fetchProductDetails();
+                    // Safely update active thumb styles
+                    currentImageArray.forEach((_, i) => {
+                        const thumbEl = safeEl(`thumb-${i}`);
+                        if(thumbEl) {
+                            // Overwrite classes directly to prevent classList bugs
+                            thumbEl.className = `relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${i === index ? 'active-thumb' : 'inactive-thumb'}`;
+                        }
+                    });
+                };
+
+                // Initialize the main image
+                window.changeMainImage(0);
+
+                // Reveal Page Safely
+                const ls = safeEl('loading-state');
+                const pl = safeEl('product-layout');
+                if (ls) ls.classList.add('hidden');
+                if (pl) pl.classList.remove('hidden');
+
+            } catch (globalError) {
+                // If ANYTHING crashes, it falls here and prints exactly why to the screen.
+                console.error("Critical Execution Error: ", globalError);
+                const lc = document.getElementById('loading-content');
+                if (lc) {
+                    lc.innerHTML = `
+                        <div class="bg-red-50 p-6 rounded-xl border border-red-200 max-w-md mx-auto text-center">
+                            <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
+                            <h3 class="text-red-700 font-bold text-lg mb-1">Unexpected Error</h3>
+                            <p class="text-sm text-red-600 mb-4">${globalError.message}</p>
+                            <a href="index.html" class="text-red-700 underline font-bold text-sm">Return Home</a>
+                        </div>`;
+                }
+            }
+        })(); // The function executes itself instantly
     </script>
 </body>
 </html>
