@@ -12,7 +12,7 @@
         tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'], }, colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } } } } }
     </script>
     <style>
-        /* Essential Gallery Styles found by Chrome AI */
+        /* Essential Gallery Styles */
         .active-thumb { border: 2px solid #2563eb; opacity: 1; }
         .inactive-thumb { border: 2px solid transparent; opacity: 0.6; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -79,48 +79,199 @@
 
                 <div>
                     <h3 class="font-heading text-2xl font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2">Product Overview</h3>
-                    <div id="prod-full-desc" class="prose prose-slate max-w-none text-slate-600 leading-loose whitespace-pre-line"></div>
+                    <!-- Added formatting classes for rich text -->
+                    <div id="prod-full-desc" class="prose prose-slate prose-a:text-primary-600 max-w-none text-slate-600 leading-loose"></div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
-const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+        // Use an IIFE (Immediately Invoked Function Expression) to prevent global scope pollution
+        (async function initProductPage() {
+            const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
+            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
-async function fetchProductDetails() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
-    if(!productId) return;
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            let currentImageArray = [];
 
-    try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
-        const data = await res.json();
-        if(data && data.length > 0) renderProduct(data[0]);
-    } catch (err) {
-        document.getElementById('loading-state').innerHTML = "Error loading product.";
-    }
-}
+            // DEFENSIVE HELPERS
+            // Safe update for plain text (titles, prices)
+            const safeUpdateText = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            };
+            
+            // Safe update for HTML (rich text descriptions) - Fixes Bug #3
+            const safeUpdateHTML = (id, html) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = html;
+            }
 
-function renderProduct(p) {
-    document.getElementById('prod-title').innerText = p.name;
-    document.getElementById('prod-price').innerText = `$${p.price}`;
-    document.getElementById('prod-category').innerText = p.category || 'Product';
-    document.getElementById('prod-short-desc').innerText = p.description || '';
-    document.getElementById('prod-full-desc').innerText = p.full_description || '';
-    
-    if(p.image) {
-        document.getElementById('main-image').src = p.image;
-        document.getElementById('main-image').classList.remove('hidden');
-    }
+            // Error Display Helper
+            const displayError = (msg) => {
+                const loadingBox = document.getElementById('loading-content');
+                if (loadingBox) {
+                    loadingBox.innerHTML = `
+                        <div class="bg-red-50 p-6 rounded-2xl border border-red-200 max-w-md mx-auto text-center">
+                            <i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i>
+                            <h3 class="text-red-700 font-bold text-xl mb-1">Notice</h3>
+                            <p class="text-sm text-red-600 mb-4">${msg}</p>
+                            <a href="index.html" class="inline-block bg-white border border-red-200 px-4 py-2 rounded-lg text-red-700 font-bold text-sm">Return Home</a>
+                        </div>`;
+                }
+            };
 
-    document.getElementById('loading-state').classList.add('hidden');
-    document.getElementById('product-layout').classList.remove('hidden');
-}
+            // Safe YouTube Parser
+            const getYoutubeId = (url) => {
+                if (!url || typeof url !== 'string') return null;
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : null;
+            };
 
-document.addEventListener('DOMContentLoaded', fetchProductDetails);
+            try {
+                let p; // Variable to hold our product data
+
+                if (!productId) {
+                    // PREVIEW MODE: If loaded without an ID, show a demo product to test the UI
+                    console.log("No ID provided. Loading Preview Data.");
+                    p = {
+                        id: 'demo-123',
+                        name: 'Softode Pro SaaS Template',
+                        category: 'Web Template',
+                        price: 49,
+                        description: 'A premium, fully responsive template designed to get your software business online fast.',
+                        full_description: '<p>Experience the ultimate UI kit built for modern web applications. Features include:</p><ul><li>Responsive mobile-first design</li><li>Lightning fast loading times</li><li>Clean, modern aesthetic</li></ul><p>Ready to deploy today!</p>',
+                        supplier: 'https://example.com/demo',
+                        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+                        image_gallery: [
+                            'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+                            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
+                            'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+                        ]
+                    };
+                } else {
+                    // LIVE MODE: Fetch real data from Supabase
+                    const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
+                    if (!res.ok) throw new Error("Failed to connect to the database.");
+                    
+                    const data = await res.json();
+                    
+                    // Fix Bug #1: Safely check for errors or empty arrays without crashing
+                    if (data.error) throw new Error(data.error.message || "Database error.");
+                    if (!Array.isArray(data) || data.length === 0) throw new Error("Product not found or has been deleted.");
+
+                    p = data[0];
+                }
+
+                // 1. Safely populate data using our helpers
+                document.title = `${p.name || 'Product'} | Softode`;
+                safeUpdateText('prod-category', p.category || 'Template');
+                safeUpdateText('prod-title', p.name || 'Unnamed Product');
+                safeUpdateText('prod-short-desc', p.description || '');
+                safeUpdateText('prod-price', `$${p.price || '0'}`);
+                
+                // Use innerHTML here to keep bold text and lists!
+                safeUpdateHTML('prod-full-desc', p.full_description || 'No detailed overview provided.');
+
+                // 2. Safely attach Checkout event
+                const checkoutBtn = document.getElementById('checkout-btn');
+                if (checkoutBtn) {
+                    checkoutBtn.onclick = () => window.location.href = `checkout.html?id=${p.id}`;
+                }
+
+                // 3. Safely attach Demo links (Fix Bug #2: check type before trim)
+                if (p.supplier && typeof p.supplier === 'string' && p.supplier.trim() !== '') {
+                    const demoContainer = document.getElementById('demo-container');
+                    const mainDemoBtn = document.getElementById('demo-link-btn');
+                    
+                    if (demoContainer && mainDemoBtn) {
+                        demoContainer.classList.remove('hidden');
+                        mainDemoBtn.href = p.supplier.split(',')[0].trim();
+                    }
+                }
+
+                // 4. Safely parse Image Gallery
+                const mainImg = p.image || 'https://placehold.co/800x600';
+                currentImageArray = [mainImg];
+
+                if (p.image_gallery) {
+                    try {
+                        if (typeof p.image_gallery === 'string') {
+                            if (p.image_gallery.trim().startsWith('[')) {
+                                const parsed = JSON.parse(p.image_gallery);
+                                if(Array.isArray(parsed)) currentImageArray = currentImageArray.concat(parsed);
+                            } else {
+                                const split = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
+                                currentImageArray = currentImageArray.concat(split);
+                            }
+                        } else if (Array.isArray(p.image_gallery)) {
+                            currentImageArray = currentImageArray.concat(p.image_gallery);
+                        }
+                    } catch(e) { console.warn("Gallery parse warning, safely ignored."); }
+                }
+
+                const thumbContainer = document.getElementById('thumbnail-container');
+                if (thumbContainer && currentImageArray.length > 1) {
+                    thumbContainer.innerHTML = '';
+                    currentImageArray.forEach((url, i) => {
+                        const ytId = getYoutubeId(url);
+                        const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
+                        const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
+                        const thumbState = i === 0 ? 'active-thumb' : 'inactive-thumb';
+                        
+                        thumbContainer.innerHTML += `
+                            <button onclick="window.changeMainImage(${i})" id="thumb-${i}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                                <img src="${thumbUrl}" class="w-full h-full object-cover pointer-events-none">
+                                ${playIcon}
+                            </button>
+                        `;
+                    });
+                }
+
+                // 5. Global Image Switcher Function
+                window.changeMainImage = function(index) {
+                    const mainContainer = document.getElementById('main-image-container');
+                    if (!mainContainer) return;
+                    
+                    const url = currentImageArray[index];
+                    const ytId = getYoutubeId(url);
+                    
+                    mainContainer.style.opacity = 0;
+                    setTimeout(() => {
+                        if(ytId) {
+                            mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0 rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                        } else {
+                            mainContainer.innerHTML = `<img src="${url}" class="w-full h-full object-cover absolute inset-0 rounded-3xl">`;
+                        }
+                        mainContainer.style.opacity = 1;
+                    }, 150);
+
+                    // Update active thumb classes safely
+                    currentImageArray.forEach((_, i) => {
+                        const thumbEl = document.getElementById(`thumb-${i}`);
+                        if(thumbEl) {
+                            thumbEl.className = `relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${i === index ? 'active-thumb' : 'inactive-thumb'}`;
+                        }
+                    });
+                };
+
+                window.changeMainImage(0);
+
+                // 6. Reveal Page (This only happens if NO errors occurred)
+                const loadingState = document.getElementById('loading-state');
+                const productLayout = document.getElementById('product-layout');
+                if (loadingState) loadingState.classList.add('hidden');
+                if (productLayout) productLayout.classList.remove('hidden');
+
+            } catch (globalError) {
+                console.error("Critical Execution Error: ", globalError);
+                displayError(globalError.message);
+            }
+        })(); 
     </script>
 </body>
 </html>
