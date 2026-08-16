@@ -110,112 +110,173 @@
         <div class="max-w-7xl mx-auto px-6 text-center"><p class="text-sm text-slate-400 font-medium">© 2026 Softode. All rights reserved.</p></div>
     </footer>
 
-    <script>
+   <script>
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G';
         const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
-        // Get the Product ID from the URL (e.g., product.html?id=123)
+        // 1. Get the ID from the URL safely
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
+        let productId = urlParams.get('id');
+
+        // Fallback for local testing so it doesn't crash if you open it directly
+        if (!productId) {
+            console.warn("No ID found in URL. Using Demo ID to prevent crash.");
+            productId = '1786817016279'; 
+        }
 
         let currentImageArray = [];
 
-        async function fetchProductDetails() {
-            if(!productId) { window.location.href = 'index.html'; return; } // Redirect if no ID
+        // DEFENSIVE HELPER: Safely update text only if the HTML element exists
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
+        }
 
+        // DEFENSIVE HELPER: Safely handle YouTube links
+        function getYoutubeId(url) {
+            if (!url || typeof url !== 'string') return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Handle errors gracefully without spinning forever
+        function showError(message) {
+            const loadingState = document.getElementById('loading-state');
+            const errorState = document.getElementById('error-state');
+            const productLayout = document.getElementById('product-layout');
+            
+            if (loadingState) loadingState.classList.add('hidden');
+            if (productLayout) productLayout.classList.add('hidden');
+            
+            if (errorState) {
+                errorState.classList.remove('hidden');
+                const msgEl = document.getElementById('error-message');
+                if (msgEl) msgEl.innerText = message;
+            }
+        }
+
+        async function loadProduct() {
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
-                const data = await res.json();
                 
-                if(!data || data.length === 0) { throw new Error("Product not found"); }
+                if (!res.ok) throw new Error("Failed to connect to the database.");
+                
+                const data = await res.json();
+                if (!data || data.length === 0) throw new Error("Product not found or has been removed.");
                 
                 const p = data[0];
-                renderProduct(p);
-            } catch (err) {
-                document.getElementById('loading-state').innerHTML = `<div class="text-center text-red-500"><p class="font-bold text-xl mb-2">Oops!</p><p>Product not found or database error.</p><a href="index.html" class="text-blue-500 underline mt-4 inline-block">Return Home</a></div>`;
-            }
-        }
+                
+                // Safely load all text elements
+                document.title = `${p.name || 'Product'} | Softode`;
+                safeSetText('prod-category', p.category || 'Digital Product');
+                safeSetText('prod-title', p.name || 'Unnamed Product');
+                safeSetText('prod-short-desc', p.description || '');
+                safeSetText('prod-price', `$${p.price || '0'}`);
+                safeSetText('prod-full-desc', p.full_description || 'No detailed overview provided.');
 
-        function renderProduct(p) {
-            // 1. Populate Text Data
-            document.title = `${p.name} | Softode`;
-            document.getElementById('prod-category').innerText = p.category || 'Template';
-            document.getElementById('prod-title').innerText = p.name;
-            document.getElementById('prod-short-desc').innerText = p.description || '';
-            document.getElementById('prod-price').innerText = `$${p.price}`;
-            document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
-            
-            // Demo Button Logic
-            if(p.supplier) { // We used the 'supplier' field for Demo URLs
-                document.getElementById('demo-container').classList.remove('hidden');
-                document.getElementById('prod-demo').href = p.supplier;
-            }
+                // Safely handle Checkout button
+                const checkoutBtn = document.getElementById('checkout-btn');
+                if (checkoutBtn) {
+                    checkoutBtn.onclick = () => { window.location.href = `checkout.html?id=${p.id}`; };
+                }
 
-            // Checkout Button Setup (Pass the ID to the checkout page)
-            document.getElementById('checkout-btn').onclick = () => {
-                window.location.href = `checkout.html?id=${p.id}`;
-            };
-
-            // 2. Setup Image Gallery
-            const mainImg = p.image || 'https://placehold.co/800x600';
-            currentImageArray = [mainImg];
-            
-            // If they uploaded gallery images in Admin panel, add them to the array
-            if(p.image_gallery && Array.isArray(p.image_gallery)) {
-                currentImageArray = currentImageArray.concat(p.image_gallery);
-            }
-
-            // Set main image
-            document.getElementById('main-image').src = currentImageArray[0];
-
-            // Build Thumbnails
-            const thumbContainer = document.getElementById('thumbnail-container');
-            thumbContainer.innerHTML = '';
-            
-            if(currentImageArray.length > 1) {
-                currentImageArray.forEach((imgUrl, index) => {
-                    const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
-                    thumbContainer.innerHTML += `
-                        <button onclick="changeMainImage(${index})" id="thumb-${index}" class="w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
-                            <img src="${imgUrl}" class="w-full h-full object-cover pointer-events-none">
-                        </button>
-                    `;
-                });
-            }
-
-            // Reveal Page
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('product-layout').classList.remove('hidden');
-        }
-
-        // Javascript to swap the large image when a small one is clicked
-        function changeMainImage(index) {
-            const mainImgEl = document.getElementById('main-image');
-            
-            // Simple fade effect
-            mainImgEl.style.opacity = 0;
-            setTimeout(() => {
-                mainImgEl.src = currentImageArray[index];
-                mainImgEl.style.opacity = 1;
-            }, 150);
-
-            // Update thumbnail borders
-            currentImageArray.forEach((_, i) => {
-                const thumbEl = document.getElementById(`thumb-${i}`);
-                if(thumbEl) {
-                    if(i === index) {
-                        thumbEl.classList.remove('inactive-thumb');
-                        thumbEl.classList.add('active-thumb');
-                    } else {
-                        thumbEl.classList.remove('active-thumb');
-                        thumbEl.classList.add('inactive-thumb');
+                // Safely handle Demo Button
+                if (p.supplier && p.supplier.trim() !== '') { 
+                    const demoContainer = document.getElementById('demo-container');
+                    const demoLinkBtn = document.getElementById('demo-link-btn');
+                    if (demoContainer && demoLinkBtn) {
+                        demoContainer.classList.remove('hidden');
+                        demoLinkBtn.href = p.supplier.split(',')[0].trim();
                     }
                 }
-            });
+
+                // Handle Image/Video Gallery safely
+                const mainImg = p.image || 'https://placehold.co/800x600';
+                currentImageArray = [mainImg];
+                
+                if (p.image_gallery) {
+                    if (typeof p.image_gallery === 'string') {
+                        const extraImages = p.image_gallery.split(',').map(s => s.trim()).filter(Boolean);
+                        currentImageArray = currentImageArray.concat(extraImages);
+                    } else if (Array.isArray(p.image_gallery)) {
+                        currentImageArray = currentImageArray.concat(p.image_gallery);
+                    }
+                }
+
+                const thumbContainer = document.getElementById('thumbnail-container');
+                if (thumbContainer) {
+                    thumbContainer.innerHTML = '';
+                    if (currentImageArray.length > 1) {
+                        currentImageArray.forEach((url, index) => {
+                            const ytId = getYoutubeId(url);
+                            const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : url;
+                            const playIcon = ytId ? `<div class="absolute inset-0 flex items-center justify-center bg-black/40"><i class="ph-fill ph-play-circle text-white text-4xl drop-shadow-lg"></i></div>` : '';
+                            const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
+                            
+                            thumbContainer.innerHTML += `
+                                <button onclick="window.changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                                    <img src="${thumbUrl}" class="w-full h-full object-cover pointer-events-none">
+                                    ${playIcon}
+                                </button>
+                            `;
+                        });
+                    }
+                }
+
+                if (window.changeMainImage) window.changeMainImage(0);
+
+                // Hide loading state safely
+                const loadingState = document.getElementById('loading-state');
+                const productLayout = document.getElementById('product-layout');
+                if (loadingState) loadingState.classList.add('hidden');
+                if (productLayout) productLayout.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Product Page Error:", error);
+                showError(error.message);
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', fetchProductDetails);
+        window.changeMainImage = function(index) {
+            try {
+                const mainContainer = document.getElementById('main-image-container');
+                if (!mainContainer || !currentImageArray[index]) return;
+
+                const url = currentImageArray[index];
+                const ytId = getYoutubeId(url);
+                
+                mainContainer.style.opacity = 0;
+                
+                setTimeout(() => {
+                    if(ytId) {
+                        mainContainer.innerHTML = `<iframe class="w-full h-full absolute inset-0 rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                    } else {
+                        mainContainer.innerHTML = `<img src="${url}" class="w-full h-full object-cover absolute inset-0 rounded-3xl">`;
+                    }
+                    mainContainer.style.opacity = 1;
+                }, 150);
+
+                currentImageArray.forEach((_, i) => {
+                    const thumbEl = document.getElementById(`thumb-${i}`);
+                    if(thumbEl) {
+                        if(i === index) {
+                            thumbEl.classList.remove('inactive-thumb');
+                            thumbEl.classList.add('active-thumb');
+                        } else {
+                            thumbEl.classList.remove('active-thumb');
+                            thumbEl.classList.add('inactive-thumb');
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Gallery Error:", e);
+            }
+        };
+
+        // Fire the load function
+        loadProduct();
     </script>
 </body>
 </html>
