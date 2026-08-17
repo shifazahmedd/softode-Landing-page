@@ -96,9 +96,12 @@
                     </button>
                     
                     <!-- Live Demo Link (If available) -->
-                    <div id="demo-container" class="mt-4 hidden">
-                        <a id="prod-demo" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                    <div id="demo-container" class="mt-4 hidden flex-col gap-3">
+                        <a id="demo-link" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
                             View Live Demo <i class="ph-bold ph-arrow-up-right"></i>
+                        </a>
+                        <a id="demo-admin-link" href="#" target="_blank" class="hidden w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                            Admin Panel Demo <i class="ph-bold ph-lock"></i>
                         </a>
                     </div>
                 </div>
@@ -194,10 +197,25 @@
             document.getElementById('prod-price').innerText = `$${p.price || 0}`;
             document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
             
-            // Demo Button Logic
+            // Corrected Logic for Demo Buttons
             if(p.supplier) { 
                 document.getElementById('demo-container').classList.remove('hidden');
-                document.getElementById('prod-demo').href = p.supplier;
+                document.getElementById('demo-container').classList.add('flex');
+                
+                const urls = p.supplier.split(',');
+                const frontendUrl = urls[0] ? urls[0].trim() : '#';
+                const adminUrl = urls[1] ? urls[1].trim() : '#';
+
+                const demoLink = document.getElementById('demo-link');
+                if (demoLink) demoLink.href = frontendUrl;
+                
+                // If there is a second link after the comma, show the Admin button!
+                const adminEl = document.getElementById('demo-admin-link');
+                if(adminEl && urls.length > 1) {
+                    adminEl.href = adminUrl;
+                    adminEl.classList.remove('hidden');
+                    adminEl.classList.add('flex');
+                }
             }
 
             // Checkout Button Setup (Pass the ID to the checkout page)
