@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details | Softode</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Load Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <script>
         tailwind.config = {
             theme: {
@@ -31,41 +27,36 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen">
 
-    <!-- Simple Navigation -->
     <nav class="bg-white border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <a href="index.html" class="font-heading font-extrabold text-2xl tracking-tight flex items-center gap-2 text-slate-900">
                 <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><i class="ph-bold ph-lightning"></i></div>
                 Soft<span class="text-primary-600">ode</span>
             </a>
-            <a href="index.html" class="text-sm font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1 transition-colors">
+            <a href="index.html" class="text-sm font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1">
                 <i class="ph-bold ph-arrow-left"></i> Back to Store
             </a>
         </div>
     </nav>
 
-    <!-- Main Content Loader (Shows while waiting for database) -->
     <div id="loading-state" class="flex-grow flex items-center justify-center py-32">
-        <div class="text-center text-slate-400">
-            <i class="ph ph-spinner animate-spin text-4xl mb-2"></i>
-            <p>Loading product...</p>
-        </div>
+        <div class="text-center text-slate-400"><i class="ph ph-spinner animate-spin text-4xl mb-2"></i><p>Loading product...</p></div>
     </div>
 
-    <!-- Product Layout (Hidden until loaded properly) -->
     <main id="product-layout" class="hidden flex-grow max-w-7xl mx-auto px-6 py-12 w-full">
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             
             <!-- LEFT: Image Slider -->
             <div class="w-full space-y-4 sticky top-6">
-                <!-- Main Big Image -->
+                <!-- Main Big Image / Video -->
                 <div class="w-full aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative">
-                    <img id="main-image" src="https://placehold.co/800x600/eff6ff/2563eb?text=Loading..." alt="Product" class="w-full h-full object-cover transition-opacity duration-300">
+                    <img id="main-image" src="" alt="Product" class="w-full h-full object-cover transition-opacity duration-300">
+                    <iframe id="main-video" class="w-full h-full object-cover hidden absolute inset-0" frameborder="0" allowfullscreen></iframe>
                 </div>
                 <!-- Thumbnails row -->
                 <div id="thumbnail-container" class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-                    <!-- Javascript will inject thumbnails here automatically -->
+                    <!-- Javascript will inject thumbnails here -->
                 </div>
             </div>
 
@@ -88,20 +79,17 @@
                         <span id="prod-price" class="text-5xl font-black text-slate-900">$0</span>
                         <span class="text-slate-500 font-medium mb-1">/ one-time payment</span>
                     </div>
-                    <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6"><i class="ph-fill ph-check-circle"></i> Instant Access & Support</p>
+                    <p class="text-sm text-green-600 font-bold flex items-center gap-1 mb-6"><i class="ph-fill ph-check-circle"></i> Managed Hosting Included</p>
                     
-                    <!-- THIS BUTTON ROUTES TO CHECKOUT -->
+                    <!-- Checkout Button -->
                     <button id="checkout-btn" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg hover:bg-primary-700 transition-all shadow-lg flex items-center justify-center gap-2">
                         Proceed to Checkout <i class="ph-bold ph-lock-key"></i>
                     </button>
                     
                     <!-- Live Demo Link (If available) -->
-                    <div id="demo-container" class="mt-4 hidden flex-col gap-3">
-                        <a id="demo-link" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
+                    <div id="demo-container" class="mt-4 hidden">
+                        <a id="prod-demo" href="#" target="_blank" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
                             View Live Demo <i class="ph-bold ph-arrow-up-right"></i>
-                        </a>
-                        <a id="demo-admin-link" href="#" target="_blank" class="hidden w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm flex items-center justify-center gap-2">
-                            Admin Panel Demo <i class="ph-bold ph-lock"></i>
                         </a>
                     </div>
                 </div>
@@ -123,9 +111,8 @@
     </footer>
 
     <script>
-        // --- YOUR SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://vzznqlxiolikyrzabgbb.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_1zHkc8FfhIZs41L3xuNMNQ_l9L6Ph8G'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6em5xbHhpb2xpa3lyemFiZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3OTE4NzEsImV4cCI6MjEwMjM2Nzg3MX0.0K7l5yzpDC9m-MwzANH3xEWu5JBg_PELHAl99Po1EwY';
         const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
 
         // Get the Product ID from the URL (e.g., product.html?id=123)
@@ -135,136 +122,123 @@
         let currentImageArray = [];
 
         async function fetchProductDetails() {
-            // 1. Check if an ID exists. If not, show a message instead of a forced redirect.
             if(!productId) { 
-                document.getElementById('loading-state').innerHTML = `
-                    <div class="text-center max-w-lg mx-auto bg-slate-50 p-8 rounded-3xl border border-slate-200">
-                        <i class="ph-fill ph-storefront text-6xl mb-4 text-slate-400"></i>
-                        <p class="font-heading font-extrabold text-2xl mb-3 text-slate-900">No Product Selected</p>
-                        <p class="text-lg text-slate-600 mb-8">You are viewing the product template, but no specific product was selected.</p>
-                        <a href="index.html" class="px-8 py-4 bg-slate-900 text-white rounded-xl font-bold inline-block hover:bg-slate-800 transition-all shadow-lg">Return to Store</a>
-                    </div>`;
+                document.getElementById('loading-state').innerHTML = `<div class="text-center text-slate-500"><p class="font-bold text-xl mb-2">No Product Selected</p><a href="index.html" class="text-blue-500 underline mt-4 inline-block font-bold">Return Home</a></div>`;
                 return; 
-            } 
+            }
 
             try {
-                // SAFETY CHECK: Let's check if you are using the wrong type of key!
-                if(SUPABASE_KEY.startsWith('sb_')) {
-                    throw new Error("API Key Error: You are using a billing key instead of a database key. Please go to Supabase -> Settings -> API and copy the 'anon' public key (it starts with eyJ).");
-                }
-
-                // Call the database
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/catalog?id=eq.${productId}&select=*`, { headers });
                 
-                // If the database refuses the connection (wrong key, bad table name, etc.)
-                if (!res.ok) {
-                    if(res.status === 401 || res.status === 403) {
-                        throw new Error("Unauthorized! Your Supabase API key might be incorrect, or your database security policies are blocking access to the 'catalog' table.");
-                    }
-                    throw new Error(`Database connection failed (Status: ${res.status}).`);
+                if(!res.ok) {
+                    throw new Error(`Database connection failed (Status: ${res.status})`);
                 }
 
                 const data = await res.json();
                 
-                // Check if the product is completely missing
-                if(!data || !Array.isArray(data) || data.length === 0) { 
-                    throw new Error(`We could not find a product with the ID: ${productId} in your database.`); 
+                if(!data || data.length === 0) { 
+                    throw new Error("Product not found in database."); 
                 }
                 
-                // If everything is good, render the page!
                 const p = data[0];
                 renderProduct(p);
-
             } catch (err) {
-                // If ANYTHING goes wrong, display the exact error on the screen!
                 console.error("Product Error:", err);
                 document.getElementById('loading-state').innerHTML = `
                     <div class="text-center max-w-lg mx-auto bg-red-50 p-8 rounded-3xl border border-red-100">
-                        <i class="ph-fill ph-warning-circle text-6xl mb-4 text-red-500"></i>
-                        <p class="font-heading font-extrabold text-3xl mb-3 text-slate-900">Oops!</p>
-                        <p class="text-lg text-slate-600 mb-8">${err.message}</p>
-                        <a href="index.html" class="px-8 py-4 bg-slate-900 text-white rounded-xl font-bold inline-block hover:bg-slate-800 transition-all shadow-lg">Return to Store</a>
+                        <p class="font-heading font-extrabold text-2xl mb-2 text-slate-900">Oops!</p>
+                        <p class="text-slate-600 mb-6">${err.message}</p>
+                        <a href="index.html" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold inline-block hover:bg-slate-800 transition-all shadow-lg">Return to Store</a>
                     </div>`;
             }
         }
 
         function renderProduct(p) {
-            // Populate Text Data
-            document.title = `${p.name} | Softode`;
-            document.getElementById('prod-category').innerText = p.category || 'Digital Product';
+            // 1. Populate Text Data
+            document.title = `${p.name || 'Product'} | Softode`;
+            document.getElementById('prod-category').innerText = p.category || 'Template';
             document.getElementById('prod-title').innerText = p.name || 'Unnamed Product';
             document.getElementById('prod-short-desc').innerText = p.description || '';
             document.getElementById('prod-price').innerText = `$${p.price || 0}`;
             document.getElementById('prod-full-desc').innerText = p.full_description || 'No detailed overview provided for this product.';
             
-            // Corrected Logic for Demo Buttons
+            // Demo Button Logic
             if(p.supplier) { 
                 document.getElementById('demo-container').classList.remove('hidden');
-                document.getElementById('demo-container').classList.add('flex');
-                
-                const urls = p.supplier.split(',');
-                const frontendUrl = urls[0] ? urls[0].trim() : '#';
-                const adminUrl = urls[1] ? urls[1].trim() : '#';
-
-                const demoLink = document.getElementById('demo-link');
-                if (demoLink) demoLink.href = frontendUrl;
-                
-                // If there is a second link after the comma, show the Admin button!
-                const adminEl = document.getElementById('demo-admin-link');
-                if(adminEl && urls.length > 1) {
-                    adminEl.href = adminUrl;
-                    adminEl.classList.remove('hidden');
-                    adminEl.classList.add('flex');
-                }
+                document.getElementById('prod-demo').href = p.supplier;
             }
 
-            // Checkout Button Setup (Pass the ID to the checkout page)
+            // Checkout Button Setup
             document.getElementById('checkout-btn').onclick = () => {
                 window.location.href = `checkout.html?id=${p.id}`;
             };
 
-            // Setup Image Gallery
-            const mainImg = p.image || 'https://placehold.co/800x600/eff6ff/2563eb?text=No+Image';
+            // 2. Setup Image Gallery
+            const mainImg = p.image || 'https://placehold.co/800x600';
             currentImageArray = [mainImg];
             
-            // If they uploaded gallery images, add them to the array
             if(p.image_gallery && Array.isArray(p.image_gallery)) {
                 currentImageArray = currentImageArray.concat(p.image_gallery);
             }
-
-            // Set main image
-            document.getElementById('main-image').src = currentImageArray[0];
 
             // Build Thumbnails
             const thumbContainer = document.getElementById('thumbnail-container');
             thumbContainer.innerHTML = '';
             
             if(currentImageArray.length > 1) {
-                currentImageArray.forEach((imgUrl, index) => {
+                currentImageArray.forEach((mediaUrl, index) => {
                     const thumbState = index === 0 ? 'active-thumb' : 'inactive-thumb';
+                    const ytId = getYouTubeId(mediaUrl);
+                    const thumbSrc = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : mediaUrl;
+                    const playIcon = ytId ? `<div class="absolute inset-0 bg-black/30 flex items-center justify-center"><i class="ph-fill ph-play-circle text-white text-3xl"></i></div>` : '';
+                    
                     thumbContainer.innerHTML += `
-                        <button onclick="changeMainImage(${index})" id="thumb-${index}" class="w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
-                            <img src="${imgUrl}" class="w-full h-full object-cover pointer-events-none">
+                        <button onclick="changeMainImage(${index})" id="thumb-${index}" class="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 transition-all ${thumbState}">
+                            <img src="${thumbSrc}" class="w-full h-full object-cover pointer-events-none">
+                            ${playIcon}
                         </button>
                     `;
                 });
             }
 
-            // Hide loading, show product!
+            // Set main media initially
+            changeMainImage(0);
+
+            // Reveal Page
             document.getElementById('loading-state').classList.add('hidden');
             document.getElementById('product-layout').classList.remove('hidden');
         }
 
-        // Javascript to swap the large image when a small one is clicked
+        // Helper to extract YouTube ID
+        function getYouTubeId(url) {
+            if(!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Image or video switching logic
         function changeMainImage(index) {
             const mainImgEl = document.getElementById('main-image');
+            const mainVidEl = document.getElementById('main-video');
+            const mediaUrl = currentImageArray[index];
+            const ytId = getYouTubeId(mediaUrl);
             
-            // Simple fade effect
-            mainImgEl.style.opacity = 0;
-            setTimeout(() => {
-                mainImgEl.src = currentImageArray[index];
-                mainImgEl.style.opacity = 1;
-            }, 150);
+            if(ytId) {
+                mainImgEl.classList.add('hidden');
+                mainVidEl.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+                mainVidEl.classList.remove('hidden');
+            } else {
+                mainVidEl.classList.add('hidden');
+                mainVidEl.src = "";
+                
+                mainImgEl.style.opacity = 0;
+                mainImgEl.classList.remove('hidden');
+                setTimeout(() => {
+                    mainImgEl.src = mediaUrl;
+                    mainImgEl.style.opacity = 1;
+                }, 150);
+            }
 
             // Update thumbnail borders
             currentImageArray.forEach((_, i) => {
@@ -281,7 +255,6 @@
             });
         }
 
-        // Run this the second the page loads!
         document.addEventListener('DOMContentLoaded', fetchProductDetails);
     </script>
 </body>
